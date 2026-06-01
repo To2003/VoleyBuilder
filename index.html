@@ -1,0 +1,2275 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0e171f">
+    <title>Pizarra Vóley · Táctica + Stats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Saira:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e171f;
+            --panel: #16212c;
+            --panel2: #1b2733;
+            --line: #283747;
+            --text: #e6edf3;
+            --muted: #9fb3c8;
+            --accent: #e8794b;
+            --accent2: #22d3ee;
+            --good: #10b981;
+            --bad: #ef4444;
+            --warn: #f59e0b;
+            --disp: 'Saira Condensed', 'Arial Narrow', system-ui, sans-serif;
+            --body: 'Saira', system-ui, -apple-system, sans-serif;
+            --shadow: 0 8px 24px rgba(0, 0, 0, .35);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            font-size: 16px;
+            line-height: 1.4;
+            padding-bottom: 78px;
+            background-image: radial-gradient(900px 500px at 80% -10%, rgba(232, 121, 75, .10), transparent 60%),
+                radial-gradient(700px 500px at -10% 10%, rgba(34, 211, 238, .08), transparent 55%);
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: var(--disp);
+            letter-spacing: .5px;
+            margin: 0
+        }
+
+        .empty {
+            color: var(--muted);
+            text-align: center;
+            padding: 30px 12px;
+            font-style: italic
+        }
+
+        .empty-sm {
+            color: var(--muted);
+            font-size: 13px;
+            font-style: italic;
+            padding: 6px 0;
+            margin: 0
+        }
+
+        /* TOPBAR */
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px 10px;
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: linear-gradient(180deg, var(--bg), rgba(14, 23, 31, .85));
+            backdrop-filter: blur(6px);
+        }
+
+        .logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            background: linear-gradient(135deg, var(--accent), #b8542f);
+            box-shadow: var(--shadow);
+            font-size: 20px;
+        }
+
+        .topbar h1 {
+            font-size: 22px;
+            font-weight: 800;
+            text-transform: uppercase;
+            line-height: 1
+        }
+
+        .topbar .sub {
+            font-size: 12px;
+            color: var(--muted);
+            font-family: var(--body);
+            letter-spacing: 0
+        }
+
+        /* VIEWS */
+        main {
+            padding: 0 14px;
+            max-width: 1100px;
+            margin: 0 auto
+        }
+
+        .view {
+            display: none;
+            animation: fade .25s ease
+        }
+
+        .view.active {
+            display: block
+        }
+
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        .view-title {
+            font-size: 26px;
+            text-transform: uppercase;
+            font-weight: 800;
+            margin: 6px 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .view-title small {
+            font-family: var(--body);
+            font-size: 13px;
+            color: var(--muted);
+            text-transform: none;
+            font-weight: 500
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow)
+        }
+
+        .card h2 {
+            font-size: 16px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: 1px
+        }
+
+        /* FORM */
+        label.fld {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            margin: 0 0 4px;
+            text-transform: uppercase;
+            letter-spacing: .5px
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 11px 12px;
+            border-radius: 11px;
+            border: 1px solid var(--line);
+            background: var(--panel2);
+            color: var(--text);
+            font-family: var(--body);
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent2)
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 90px 1.4fr;
+            gap: 10px;
+            align-items: end
+        }
+
+        @media(max-width:560px) {
+            .form-grid {
+                grid-template-columns: 1fr 70px;
+            }
+
+            .form-grid .pos-cell {
+                grid-column: 1/-1
+            }
+        }
+
+        button {
+            font-family: var(--body);
+            cursor: pointer;
+            border: none
+        }
+
+        .btn {
+            background: var(--panel2);
+            color: var(--text);
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            padding: 12px 14px;
+            font-weight: 600;
+            font-size: 15px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: .15s;
+        }
+
+        .btn:hover {
+            border-color: var(--accent2)
+        }
+
+        .btn:active {
+            transform: scale(.97)
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, var(--accent), #c25e36);
+            border: none;
+            color: #fff
+        }
+
+        .btn.accent2 {
+            background: linear-gradient(135deg, var(--accent2), #0e9bb5);
+            border: none;
+            color: #04222a
+        }
+
+        .btn.good {
+            background: var(--good);
+            border: none;
+            color: #04261a
+        }
+
+        .btn.danger {
+            background: transparent;
+            border: 1px solid var(--bad);
+            color: #ff9d9d
+        }
+
+        .btn.full {
+            width: 100%
+        }
+
+        .btn.sm {
+            padding: 8px 12px;
+            font-size: 13px;
+            min-height: 38px
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        /* PLAYER LIST */
+        .player-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .player-row:last-child {
+            border-bottom: none
+        }
+
+        .dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            flex: 0 0 auto;
+            border: 2px solid rgba(0, 0, 0, .4)
+        }
+
+        .player-row .num {
+            font-family: var(--disp);
+            font-weight: 800;
+            font-size: 18px;
+            min-width: 34px
+        }
+
+        .player-row .pname {
+            flex: 1;
+            font-weight: 600
+        }
+
+        .pos-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            white-space: nowrap
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 6px
+        }
+
+        .mini {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            padding: 7px 9px;
+            font-size: 15px;
+            min-width: 40px;
+            min-height: 40px
+        }
+
+        .mini.danger {
+            border-color: #5a2a2a
+        }
+
+        .pos-mini {
+            font-size: 11px;
+            color: var(--muted);
+            margin-left: auto
+        }
+
+        /* CONVOCATORIA */
+        .conv-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px
+        }
+
+        .conv-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 30px;
+            background: var(--panel2);
+            border: 1.5px solid var(--line);
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 14px;
+            min-height: 44px
+        }
+
+        .conv-chip.on {
+            background: rgba(232, 121, 75, .16);
+            border-color: var(--accent);
+            color: var(--text)
+        }
+
+        .conv-counter {
+            font-family: var(--disp);
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--accent)
+        }
+
+        /* PIZARRA */
+        .board-wrap {
+            display: grid;
+            grid-template-columns: minmax(280px, 420px) 1fr;
+            gap: 16px;
+            align-items: start
+        }
+
+        @media(max-width:840px) {
+            .board-wrap {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .court-box {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 10px;
+            box-shadow: var(--shadow)
+        }
+
+        #courtSvg {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 10px;
+            touch-action: none;
+            user-select: none
+        }
+
+        .token {
+            user-select: none
+        }
+
+        .token.dragging circle {
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .6))
+        }
+
+        .ctrl-stack>.card {
+            margin-bottom: 12px
+        }
+
+        .seg {
+            display: flex;
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            overflow: hidden
+        }
+
+        .seg button {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            color: var(--muted);
+            font-weight: 600;
+            min-height: 44px
+        }
+
+        .seg button.on {
+            background: var(--accent);
+            color: #fff
+        }
+
+        .rot-display {
+            font-family: var(--disp);
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent2);
+            text-align: center;
+            min-width: 54px
+        }
+
+        .inline-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        .switch {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--muted)
+        }
+
+        .switch input {
+            width: auto
+        }
+
+        /* JUGADAS — tabs por categoría */
+        .play-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px
+        }
+
+        .play-tab {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 7px 12px;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 13px;
+            min-height: 36px
+        }
+
+        .play-tab.on {
+            background: var(--accent);
+            color: #fff;
+            border-color: transparent
+        }
+
+        .play-cat {
+            display: none
+        }
+
+        .play-cat.on {
+            display: block
+        }
+
+        .play-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px
+        }
+
+        .play-btn {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            padding: 11px 8px;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 13px;
+            text-align: left;
+            min-height: 48px;
+            line-height: 1.2
+        }
+
+        .play-btn.on {
+            background: rgba(34, 211, 238, .16);
+            border-color: var(--accent2)
+        }
+
+        .play-btn.desel {
+            background: rgba(239, 68, 68, .1);
+            border-color: var(--bad);
+            color: #ff9d9d
+        }
+
+        .draw-tools {
+            display: none;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 10px
+        }
+
+        .swatch {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer
+        }
+
+        .swatch.on {
+            border-color: #fff;
+            transform: scale(1.1)
+        }
+
+        .tool-btn {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            padding: 8px 12px;
+            color: var(--text);
+            min-height: 40px
+        }
+
+        .tool-btn.on {
+            background: var(--accent2);
+            color: #04222a
+        }
+
+        .play-controls {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--line)
+        }
+
+        .lg {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-right: 10px;
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .lg b {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%
+        }
+
+        /* CAMBIOS */
+        .sub-form {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-bottom: 10px
+        }
+
+        .sub-form .fcol {
+            flex: 1;
+            min-width: 100px
+        }
+
+        .sub-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 4px;
+            border-bottom: 1px solid var(--line);
+            font-size: 14px
+        }
+
+        .sub-row:last-child {
+            border-bottom: none
+        }
+
+        .sub-arrow {
+            font-size: 16px
+        }
+
+        .sub-out {
+            color: #ff9d9d
+        }
+
+        .sub-in {
+            color: #7df0c8
+        }
+
+        .sub-sep {
+            color: var(--muted)
+        }
+
+        /* PARTIDO */
+        .match-head {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: end;
+            margin-bottom: 12px
+        }
+
+        .match-head .fcol {
+            flex: 1;
+            min-width: 120px
+        }
+
+        #scoreboard {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 14px;
+            text-align: center
+        }
+
+        .sets-won {
+            font-family: var(--disp);
+            font-size: 24px;
+            font-weight: 800
+        }
+
+        .sets-won b {
+            color: var(--accent)
+        }
+
+        .sets-list {
+            margin-top: 8px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .set-pill {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .sum-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px
+        }
+
+        @media(max-width:560px) {
+            .sum-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        .sum-box {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center
+        }
+
+        .sum-title {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px
+        }
+
+        .sum-big {
+            font-family: var(--disp);
+            font-size: 24px;
+            font-weight: 800;
+            margin: 2px 0
+        }
+
+        .sum-sub {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px
+        }
+
+        .stat-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 12px;
+            box-shadow: var(--shadow)
+        }
+
+        .stat-head {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 15px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .stat-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 7px 0
+        }
+
+        .stat-label {
+            font-size: 13px;
+            font-weight: 600
+        }
+
+        .stat-label.good {
+            color: var(--good)
+        }
+
+        .stat-label.bad {
+            color: #ff9d9d
+        }
+
+        .stat-ctrl {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .sc {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            font-size: 20px;
+            font-weight: 800;
+            border: 1px solid var(--line);
+            background: var(--panel2);
+            color: var(--text);
+            line-height: 1
+        }
+
+        .sc.plus {
+            background: rgba(16, 185, 129, .18);
+            border-color: #1c5e49;
+            color: #7df0c8
+        }
+
+        .sc.minus {
+            background: rgba(239, 68, 68, .12);
+            border-color: #5a2a2a;
+            color: #ff9d9d
+        }
+
+        .stat-val {
+            font-family: var(--disp);
+            font-weight: 800;
+            font-size: 20px;
+            min-width: 26px;
+            text-align: center
+        }
+
+        /* HISTORIAL */
+        .hist-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 13px;
+            padding: 12px;
+            margin-bottom: 10px
+        }
+
+        .hist-main {
+            flex: 1
+        }
+
+        .hist-vs {
+            font-weight: 600
+        }
+
+        .hist-vs b {
+            color: var(--accent);
+            font-family: var(--disp);
+            font-size: 18px
+        }
+
+        .hist-date {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .stat-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 8px
+        }
+
+        .stat-table th {
+            text-align: left;
+            color: var(--accent2);
+            font-weight: 700;
+            padding: 6px 8px;
+            border-bottom: 2px solid var(--line);
+            font-size: 12px;
+            text-transform: uppercase
+        }
+
+        .stat-table td {
+            padding: 7px 8px;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .stat-table td .dot {
+            display: inline-block;
+            margin-right: 6px;
+            vertical-align: middle
+        }
+
+        #histDetail {
+            display: none;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+            margin-top: 12px
+        }
+
+        #histDetail h3 {
+            font-size: 18px;
+            margin-bottom: 6px
+        }
+
+        /* BOTTOM NAV */
+        .bottomnav {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 40;
+            display: flex;
+            background: rgba(18, 28, 37, .96);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--line);
+            padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+        }
+
+        .bottomnav button {
+            flex: 1;
+            background: transparent;
+            color: var(--muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 6px 2px;
+            min-height: 54px;
+            border-radius: 10px;
+        }
+
+        .bottomnav button .ic {
+            font-size: 20px;
+            line-height: 1
+        }
+
+        .bottomnav button.active {
+            color: var(--accent)
+        }
+
+        /* MODAL DE CONFIRMACIÓN */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px)
+        }
+
+        .modal-overlay.open {
+            display: flex;
+            animation: fade .2s ease
+        }
+
+        .modal-box {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 24px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: var(--shadow)
+        }
+
+        .modal-box p {
+            margin: 0 0 20px;
+            font-size: 16px;
+            line-height: 1.5
+        }
+
+        .modal-box h3 {
+            margin: 0 0 14px;
+            font-size: 18px
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end
+        }
+
+        .modal-actions .btn {
+            min-width: 90px
+        }
+
+        label.minilbl {
+            font-size: 12px;
+            color: var(--muted);
+            display: block;
+            margin: 0 0 4px;
+            text-transform: uppercase
+        }
+
+        .modal-input {
+            margin-bottom: 12px
+        }
+
+        /* TOAST */
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 90px;
+            transform: translateX(-50%) translateY(20px);
+            background: #04222a;
+            color: #bff5ff;
+            border: 1px solid var(--accent2);
+            padding: 11px 18px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transition: .3s;
+            z-index: 60;
+            box-shadow: var(--shadow)
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0)
+        }
+
+        #fallbackNote {
+            display: none;
+            background: rgba(245, 158, 11, .14);
+            border: 1px solid var(--warn);
+            color: #ffd58a;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            margin: 0 14px 10px
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                color: #000;
+                padding: 0
+            }
+
+            .topbar,
+            .bottomnav,
+            .match-head,
+            .stat-cards,
+            #toast,
+            .btn,
+            #fallbackNote {
+                display: none !important
+            }
+
+            .view {
+                display: none !important
+            }
+
+            #view-partido {
+                display: block !important
+            }
+
+            .card {
+                box-shadow: none;
+                border: 1px solid #ccc
+            }
+
+            .sum-big {
+                color: #000
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ============ MODAL CONFIRMAR ============ -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-box">
+            <p id="confirmMsg"></p>
+            <div class="modal-actions">
+                <button type="button" id="confirmCancel" class="btn">Cancelar</button>
+                <button type="button" id="confirmOk" class="btn danger">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL 2 INPUTS (agregar set) ============ -->
+    <div id="input2Modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Agregar set</h3>
+            <div class="modal-input">
+                <label class="minilbl" id="input2Label1">Nuestros</label>
+                <input type="number" id="input2A" inputmode="numeric" placeholder="0">
+            </div>
+            <div class="modal-input">
+                <label class="minilbl" id="input2Label2">Rival</label>
+                <input type="number" id="input2B" inputmode="numeric" placeholder="0">
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="input2Cancel" class="btn">Cancelar</button>
+                <button type="button" id="input2Ok" class="btn primary">Agregar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="topbar">
+        <div class="logo">🏐</div>
+        <div>
+            <h1>Pizarra Vóley</h1>
+            <div class="sub">Táctica + estadísticas · todo offline</div>
+        </div>
+    </div>
+    <div id="fallbackNote">⚠️ En vista previa: los datos no se guardan. Descargá el HTML y abrilo en tu navegador.</div>
+
+    <main>
+
+        <!-- ============ PLANTEL ============ -->
+        <section id="view-plantel" class="view">
+            <div class="view-title">Plantel <small>tus jugadores</small></div>
+            <div class="card">
+                <h2>Equipo</h2>
+                <label class="fld">Nombre del equipo</label>
+                <input id="teamNameInput" type="text" placeholder="Mi Equipo">
+            </div>
+            <div class="card">
+                <h2>Agregar jugador</h2>
+                <div id="npForm" class="form-grid">
+                    <div><label class="fld">Nombre</label><input id="npName" type="text" placeholder="Nombre"></div>
+                    <div><label class="fld">N°</label><input id="npNumber" type="number" inputmode="numeric"
+                            placeholder="0"></div>
+                    <div class="pos-cell"><label class="fld">Posición</label><select id="npPos"></select></div>
+                </div>
+                <button type="button" id="npAddBtn" class="btn primary full" style="margin-top:12px">+ Agregar
+                    jugador</button>
+            </div>
+            <div class="card">
+                <h2>Jugadores</h2>
+                <div id="playerList"></div>
+            </div>
+        </section>
+
+        <!-- ============ CONVOCATORIA ============ -->
+        <section id="view-convocatoria" class="view">
+            <div class="view-title">Convocatoria <small>quiénes juegan esta fecha</small></div>
+            <div class="card">
+                <div class="inline-row" style="justify-content:space-between;margin-bottom:14px">
+                    <div>
+                        <div class="conv-counter"><span id="convCount">0</span></div>
+                        <div style="font-size:12px;color:var(--muted)">convocados</div>
+                    </div>
+                    <div style="font-size:13px;color:var(--muted);max-width:60%">Tocá para sumar o sacar de la
+                        convocatoria. Mínimo 6 para rotaciones.</div>
+                </div>
+                <div id="convList" class="conv-grid"></div>
+            </div>
+        </section>
+
+        <!-- ============ PIZARRA ============ -->
+        <section id="view-pizarra" class="view">
+            <div class="view-title">Pizarra <small>táctica y rotaciones</small></div>
+            <div class="board-wrap">
+                <div class="court-box">
+                    <svg id="courtSvg" viewBox="0 384 432 384" xmlns="http://www.w3.org/2000/svg">
+                        <g id="courtLayer"></g>
+                        <g id="drawLayer"></g>
+                        <g id="tokenLayer"></g>
+                        <g id="playLayer"></g>
+                    </svg>
+                </div>
+
+                <div class="ctrl-stack">
+                    <!-- MODO -->
+                    <div class="card">
+                        <h2>Modo</h2>
+                        <div class="seg">
+                            <button type="button" id="modeMover" class="on">✋ Mover</button>
+                            <button type="button" id="modeDibujar">✏️ Dibujar</button>
+                        </div>
+                        <div id="drawTools" class="draw-tools">
+                            <button type="button" class="tool-btn on" data-tool="pen">✏️ Lápiz</button>
+                            <button type="button" class="tool-btn" data-tool="arrow">➳ Flecha</button>
+                            <span class="swatch on" data-color="#fde047" style="background:#fde047"></span>
+                            <span class="swatch" data-color="#22d3ee" style="background:#22d3ee"></span>
+                            <span class="swatch" data-color="#ef4444" style="background:#ef4444"></span>
+                            <span class="swatch" data-color="#ffffff" style="background:#ffffff"></span>
+                            <button type="button" id="clearDrawBtn" class="tool-btn">🧽 Borrar</button>
+                        </div>
+                    </div>
+
+                    <!-- PLANTILLA -->
+                    <div class="card">
+                        <h2>Plantilla en cancha</h2>
+                        <div class="btn-row">
+                            <button type="button" id="addConvBtn" class="btn sm">➕ Traer convocados</button>
+                            <button type="button" id="lineupBtn" class="btn sm accent2">📐 Alinear rotación</button>
+                            <button type="button" id="clearBoardBtn" class="btn sm danger">Vaciar</button>
+                        </div>
+                    </div>
+
+                    <!-- ROTACIÓN -->
+                    <div class="card">
+                        <h2>Rotación</h2>
+                        <div class="inline-row" style="justify-content:space-between">
+                            <div style="flex:1">
+                                <label class="fld">Sistema</label>
+                                <select id="pzSystem">
+                                    <option value="5-1">5-1</option>
+                                    <option value="4-2">4-2</option>
+                                </select>
+                            </div>
+                            <div class="rot-display" id="pzRotLabel">R1</div>
+                            <div style="display:flex;gap:6px">
+                                <button type="button" id="rotateBkBtn" class="btn sm" title="Rotar atrás">◀
+                                    Atrás</button>
+                                <button type="button" id="rotateBtn" class="btn accent2 sm">Adelante ▶</button>
+                            </div>
+                        </div>
+                        <div style="margin-top:10px"><label class="fld">Armador</label><select id="pzSetter"></select>
+                        </div>
+                        <div class="setter2-wrap" style="margin-top:8px;display:none"><label class="fld">Armador 2
+                                (4-2)</label><select id="pzSetter2"></select></div>
+                        <div style="margin-top:8px"><label class="fld">Opuesto</label><select id="pzOpp"></select></div>
+                        <div style="margin-top:8px"><label class="fld">Líbero</label><select id="pzLibero"></select>
+                        </div>
+                        <div class="inline-row" style="margin-top:10px">
+                            <label class="switch"><input type="checkbox" id="libToggle"> Usar líbero atrás</label>
+                            <label class="switch"><input type="checkbox" id="rivalToggle"> Ver cancha rival</label>
+                        </div>
+                    </div>
+
+                    <!-- CAMBIOS -->
+                    <div class="card">
+                        <h2>Cambios</h2>
+                        <div class="sub-form">
+                            <div class="fcol"><label class="fld">Sale</label><select id="subOut"></select></div>
+                            <div class="fcol"><label class="fld">Entra</label><select id="subIn"></select></div>
+                            <button type="button" id="applySubBtn" class="btn sm accent2">🔄 Cambiar</button>
+                        </div>
+                        <div id="subsList"></div>
+                    </div>
+
+                    <!-- JUGADAS -->
+                    <div class="card">
+                        <h2>Jugadas</h2>
+                        <div class="play-tabs">
+                            <button type="button" class="play-tab on" data-cat="ataque">⚡ Ataque</button>
+                            <button type="button" class="play-tab" data-cat="recepcion">🛡️ Recepción</button>
+                            <button type="button" class="play-tab" data-cat="defensa">🧱 Defensa</button>
+                        </div>
+
+                        <div class="play-cat on" id="cat-ataque">
+                            <div class="play-grid">
+                                <button type="button" class="play-btn" data-play="p4">Ataque por 4<br><small
+                                        style="color:var(--muted)">punta izq.</small></button>
+                                <button type="button" class="play-btn" data-play="p2">Ataque por 2<br><small
+                                        style="color:var(--muted)">punta der.</small></button>
+                                <button type="button" class="play-btn" data-play="p3">Ataque por 3<br><small
+                                        style="color:var(--muted)">1er tiempo</small></button>
+                                <button type="button" class="play-btn" data-play="p6">Ataque por 6<br><small
+                                        style="color:var(--muted)">pipe</small></button>
+                                <button type="button" class="play-btn" data-play="p1">Ataque por 1<br><small
+                                        style="color:var(--muted)">zaguero der.</small></button>
+                            </div>
+                        </div>
+
+                        <div class="play-cat" id="cat-recepcion">
+                            <div class="play-grid" style="grid-template-columns:1fr">
+                                <button type="button" class="play-btn" data-play="recepcion">🛡️ Recepción de
+                                    saque<br><small style="color:var(--muted)">se adapta a la rotación
+                                        actual</small></button>
+                            </div>
+                        </div>
+
+                        <div class="play-cat" id="cat-defensa">
+                            <div class="play-grid">
+                                <button type="button" class="play-btn" data-play="def_line">Defensa en línea</button>
+                                <button type="button" class="play-btn" data-play="def_diagonal">Defensa
+                                    diagonal</button>
+                            </div>
+                        </div>
+
+                        <div id="playControls" class="play-controls">
+                            <div style="font-weight:700;margin-bottom:8px" id="playTitle"></div>
+                            <div class="btn-row">
+                                <button type="button" id="playPauseBtn" class="btn sm">⏸ Pausa</button>
+                                <button type="button" id="playRestartBtn" class="btn sm">↺ Reiniciar</button>
+                                <button type="button" id="defBtn" class="btn sm">🛡️ Defensa</button>
+                                <button type="button" id="playCloseBtn" class="btn sm danger">✕ Cerrar</button>
+                            </div>
+                            <div style="margin-top:8px">
+                                <span class="lg"><b style="background:#ef4444"></b>B=bloqueo</span>
+                                <span class="lg"><b style="background:#f97316"></b>D=defensa</span>
+                                <span class="lg"><b style="background:#22d3ee"></b>C=cobertura</span>
+                                <span class="lg"><b style="background:#f59e0b"></b>A=armador</span>
+                                <span class="lg"><b style="background:#fde047"></b>Atk=atacante</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="exportPngBtn" class="btn primary full">📸 Exportar pizarra (PNG)</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ PARTIDO ============ -->
+        <section id="view-partido" class="view">
+            <div class="view-title">Partido <small>estadísticas en vivo</small></div>
+            <div id="partidoBody">
+                <div id="partidoHeader">
+                    <div class="card">
+                        <div class="match-head">
+                            <div class="fcol"><label class="fld">Rival</label><input id="mOpponent" type="text"
+                                    placeholder="Rival"></div>
+                            <div class="fcol"><label class="fld">Fecha</label><input id="mDate" type="date"></div>
+                            <button type="button" id="addSetBtn" class="btn sm">+ Set</button>
+                        </div>
+                        <div id="scoreboard"></div>
+                        <div id="teamSummary"></div>
+                    </div>
+                    <div class="card">
+                        <h2>Registro por jugador</h2>
+                        <div id="statCards" class="stat-cards"></div>
+                    </div>
+                    <div class="btn-row" style="margin-bottom:14px">
+                        <button type="button" id="exportStatsBtn" class="btn accent2">🖼️ Exportar stats</button>
+                        <button type="button" id="printStatsBtn" class="btn sm">🖨️ Imprimir</button>
+                        <button type="button" id="resetMatchBtn" class="btn sm danger">Reiniciar</button>
+                        <button type="button" id="finishMatchBtn" class="btn good" style="margin-left:auto">✓ Finalizar
+                            y guardar</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ HISTORIAL ============ -->
+        <section id="view-historial" class="view">
+            <div class="view-title">Historial <small>partidos y acumulado</small></div>
+            <div class="card">
+                <h2>Partidos guardados</h2>
+                <div id="historyList"></div>
+                <div id="histDetail"></div>
+            </div>
+            <div class="card">
+                <h2>Estadísticas acumuladas</h2>
+                <div id="accumBody"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="bottomnav">
+        <button type="button" id="tab-plantel"><span class="ic">👥</span>Plantel</button>
+        <button type="button" id="tab-convocatoria"><span class="ic">📋</span>Convocatoria</button>
+        <button type="button" id="tab-pizarra"><span class="ic">🏐</span>Pizarra</button>
+        <button type="button" id="tab-partido"><span class="ic">📊</span>Partido</button>
+        <button type="button" id="tab-historial"><span class="ic">🗂️</span>Historial</button>
+    </nav>
+    <div id="toast"></div>
+
+    <script>
+        // tabs de jugadas
+        document.querySelectorAll('.play-tab').forEach(tab => {
+            tab.onclick = () => {
+                document.querySelectorAll('.play-tab').forEach(t => t.classList.remove('on'));
+                document.querySelectorAll('.play-cat').forEach(c => c.classList.remove('on'));
+                tab.classList.add('on');
+                document.getElementById('cat-' + tab.dataset.cat).classList.add('on');
+            };
+        });
+        // render selects de cambios cuando se entra a la pizarra
+        document.getElementById('tab-pizarra').addEventListener('click', () => {
+            setTimeout(() => { if (typeof renderSubSelects === 'function') renderSubSelects(); }, 100);
+        });
+    </script>
+    <script>
+        /* ============================================================
+           VÓLEY · Pizarra Táctica + Estadísticas  v4
+           ============================================================ */
+        (function () {
+            'use strict';
+
+            const C = { net: 396, ourTop: 396, ourBot: 756, rivTop: 36, left: 36, right: 396, cx: 216, r: 22 };
+            const ZONES = { 4: { x: 96, y: 452 }, 3: { x: 216, y: 452 }, 2: { x: 336, y: 452 }, 5: { x: 96, y: 636 }, 6: { x: 216, y: 636 }, 1: { x: 336, y: 636 } };
+            const POSITIONS = ['Armador', 'Opuesto', 'Central', 'Punta-Receptor', 'Líbero'];
+            const POS_COLOR = { 'Armador': '#f59e0b', 'Opuesto': '#ef4444', 'Central': '#3b82f6', 'Punta-Receptor': '#10b981', 'Líbero': '#a855f7' };
+
+            const STORE_KEY = 'voley_app_v4';
+            let memoryFallback = false;
+            const defaultState = () => ({
+                teamName: 'Mi Equipo', players: [], convocatoria: [],
+                pizarra: { system: '5-1', rotation: 1, setterId: null, setter2Id: null, oppId: null, liberoId: null, mb1Id: null, mb2Id: null, oh1Id: null, oh2Id: null, useLibero: false, showRival: false, positions: {}, drawings: [], subs: [] },
+                currentMatch: null, history: []
+            });
+            let state = loadState();
+
+            function loadState() {
+                try { const raw = localStorage.getItem(STORE_KEY); if (raw) { const p = JSON.parse(raw); const d = defaultState(); p.pizarra = Object.assign(d.pizarra, p.pizarra || {}); return Object.assign(d, p); } }
+                catch (e) { memoryFallback = true; }
+                return defaultState();
+            }
+            function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { memoryFallback = true; } }
+
+            const $ = id => document.getElementById(id);
+            const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+            const SVGNS = 'http://www.w3.org/2000/svg';
+            function svgEl(tag, attrs) { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+            function getPlayer(id) { return state.players.find(p => p.id === id); }
+            function convocados() { return state.convocatoria.map(getPlayer).filter(Boolean); }
+            function pct(n, d) { return d > 0 ? Math.round((n / d) * 100) : 0; }
+            function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+            function dstamp() { return new Date().toISOString().slice(0, 10); }
+            function downloadBlob(blob, name) { const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1e3); toast('Descargado: ' + name); }
+            function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._tm); t._tm = setTimeout(() => t.classList.remove('show'), 2400); }
+
+            function showConfirm(msg, onOk) { $('confirmMsg').textContent = msg; $('confirmModal').classList.add('open'); $('confirmOk')._cb = onOk; }
+            function bindConfirmModal() {
+                $('confirmOk').onclick = () => { $('confirmModal').classList.remove('open'); if ($('confirmOk')._cb) $('confirmOk')._cb(); };
+                $('confirmCancel').onclick = () => $('confirmModal').classList.remove('open');
+                $('confirmModal').addEventListener('pointerdown', e => { if (e.target === $('confirmModal')) $('confirmModal').classList.remove('open'); });
+            }
+
+            /* ============================================================ ROUTER */
+            const VIEWS = ['plantel', 'convocatoria', 'pizarra', 'partido', 'historial'];
+            function go(view) {
+                VIEWS.forEach(v => { $('view-' + v).classList.toggle('active', v === view); const t = $('tab-' + v); if (t) t.classList.toggle('active', v === view); });
+                if (view === 'plantel') renderPlantel();
+                else if (view === 'convocatoria') renderConvocatoria();
+                else if (view === 'pizarra') renderPizarra();
+                else if (view === 'partido') renderPartido();
+                else if (view === 'historial') renderHistorial();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            /* ============================================================ PLANTEL */
+            function renderPlantel() {
+                $('teamNameInput').value = state.teamName;
+                const list = $('playerList'); list.innerHTML = '';
+                if (!state.players.length) { list.innerHTML = '<p class="empty">Agregá el primer jugador arriba 👆</p>'; return; }
+                state.players.slice().sort((a, b) => (a.number || 0) - (b.number || 0)).forEach(p => {
+                    const row = document.createElement('div'); row.className = 'player-row';
+                    row.innerHTML = `<span class="dot" style="background:${p.color}"></span><span class="num">#${p.number}</span><span class="pname">${escapeHtml(p.name)}</span><span class="pos-badge" style="background:${p.color}22;color:${p.color}">${p.position}</span><div class="row-actions"><button type="button" class="mini" data-edit="${p.id}">✏️</button><button type="button" class="mini danger" data-del="${p.id}">🗑️</button></div>`;
+                    list.appendChild(row);
+                });
+                list.querySelectorAll('[data-del]').forEach(b => b.onclick = () => showConfirm(`¿Borrar a ${getPlayer(b.dataset.del).name} del plantel?`, () => delPlayer(b.dataset.del)));
+                list.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => editPlayer(b.dataset.edit));
+            }
+            function addPlayerFromForm() {
+                const name = $('npName').value.trim(), number = parseInt($('npNumber').value, 10), position = $('npPos').value;
+                if (!name) { toast('Poné un nombre'); return; } if (isNaN(number)) { toast('Poné un número'); return; }
+                const editing = $('npForm').dataset.editing;
+                if (editing) { Object.assign(getPlayer(editing), { name, number, position, color: POS_COLOR[position] }); delete $('npForm').dataset.editing; $('npAddBtn').textContent = '+ Agregar jugador'; }
+                else state.players.push({ id: uid(), name, number, position, color: POS_COLOR[position] });
+                $('npName').value = ''; $('npNumber').value = ''; save(); renderPlantel();
+            }
+            function editPlayer(id) { const p = getPlayer(id); $('npName').value = p.name; $('npNumber').value = p.number; $('npPos').value = p.position; $('npForm').dataset.editing = id; $('npAddBtn').textContent = '💾 Guardar cambios'; $('npName').focus(); }
+            function delPlayer(id) { state.players = state.players.filter(x => x.id !== id); state.convocatoria = state.convocatoria.filter(x => x !== id); delete state.pizarra.positions[id]; save(); renderPlantel(); }
+
+            /* ============================================================ CONVOCATORIA */
+            function renderConvocatoria() {
+                const wrap = $('convList'); wrap.innerHTML = '';
+                if (!state.players.length) { wrap.innerHTML = '<p class="empty">Primero cargá jugadores.</p>'; $('convCount').textContent = '0'; return; }
+                state.players.slice().sort((a, b) => (a.number || 0) - (b.number || 0)).forEach(p => {
+                    const on = state.convocatoria.includes(p.id);
+                    const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'conv-chip' + (on ? ' on' : '');
+                    chip.innerHTML = `<span class="dot" style="background:${p.color}"></span>#${p.number} ${escapeHtml(p.name)}`;
+                    chip.onclick = () => { if (on) state.convocatoria = state.convocatoria.filter(x => x !== p.id); else state.convocatoria.push(p.id); save(); renderConvocatoria(); };
+                    wrap.appendChild(chip);
+                });
+                $('convCount').textContent = String(state.convocatoria.length);
+            }
+
+            /* ============================================================ PIZARRA */
+            let boardMode = 'mover', drawTool = 'pen', drawColor = '#fde047';
+
+            function renderPizarra() {
+                fillRoleSelects(); $('pzSystem').value = state.pizarra.system; $('pzRotLabel').textContent = 'R' + state.pizarra.rotation;
+                $('libToggle').checked = state.pizarra.useLibero; $('rivalToggle').checked = state.pizarra.showRival;
+                document.querySelectorAll('.setter2-wrap').forEach(e => e.style.display = state.pizarra.system === '4-2' ? '' : 'none');
+                renderSubsList(); renderSubSelects(); drawCourt(); drawTokens(); drawDrawings(); updateModeUI();
+            }
+
+            function fillRoleSelects() {
+                const list = convocados();
+                const MAP = { pzSetter: 'setterId', pzSetter2: 'setter2Id', pzOpp: 'oppId', pzLibero: 'liberoId' };
+                const keys = ['pzSetter', 'pzSetter2', 'pzOpp', 'pzLibero'];
+                keys.forEach(selId => {
+                    const sel = $(selId), thisKey = MAP[selId], thisVal = state.pizarra[thisKey];
+                    const usedElsewhere = new Set(keys.filter(s => s !== selId).map(s => state.pizarra[MAP[s]]).filter(Boolean));
+                    let html = '<option value="">—</option>';
+                    list.forEach(p => { if (!usedElsewhere.has(p.id) || p.id === thisVal) html += `<option value="${p.id}"${p.id === thisVal ? ' selected' : ''}>#${p.number} ${escapeHtml(p.name)}</option>`; });
+                    sel.innerHTML = html;
+                });
+            }
+
+            function courtSvg() { return $('courtSvg'); }
+
+            function drawCourt() {
+                const showRival = state.pizarra.showRival, topY = showRival ? C.rivTop : C.net, totalH = showRival ? (C.ourBot - C.rivTop) : (C.ourBot - C.net);
+                const svg = courtSvg(); svg.setAttribute('viewBox', `0 ${topY - 12} 432 ${totalH + 24}`);
+                const g = $('courtLayer'); g.innerHTML = '';
+                g.appendChild(svgEl('rect', { x: C.left, y: C.net, width: 360, height: 360, fill: '#1f6f78', rx: 4 }));
+                if (showRival) g.appendChild(svgEl('rect', { x: C.left, y: C.rivTop, width: 360, height: 360, fill: '#2a4d63', rx: 4 }));
+                g.appendChild(svgEl('rect', { x: C.left, y: C.net, width: 360, height: 120, fill: '#e8794b', opacity: 0.85 }));
+                if (showRival) g.appendChild(svgEl('rect', { x: C.left, y: 276, width: 360, height: 120, fill: '#c96a44', opacity: 0.55 }));
+                const line = (x1, y1, x2, y2, w) => g.appendChild(svgEl('line', { x1, y1, x2, y2, stroke: '#ffffff', 'stroke-width': w || 3, 'stroke-linecap': 'round' }));
+                line(C.left, C.net, C.right, C.net, 3); line(C.left, C.ourBot, C.right, C.ourBot, 3); line(C.left, C.net, C.left, C.ourBot, 3); line(C.right, C.net, C.right, C.ourBot, 3); line(C.left, 516, C.right, 516, 2);
+                if (showRival) { line(C.left, C.rivTop, C.right, C.rivTop, 3); line(C.left, C.rivTop, C.left, C.net, 3); line(C.right, C.rivTop, C.right, C.net, 3); line(C.left, 276, C.right, 276, 2); }
+                g.appendChild(svgEl('line', { x1: C.left - 6, y1: C.net, x2: C.right + 6, y2: C.net, stroke: '#0b0f14', 'stroke-width': 6 }));
+                g.appendChild(svgEl('line', { x1: C.left - 6, y1: C.net, x2: C.right + 6, y2: C.net, stroke: '#cbd5e1', 'stroke-width': 6, 'stroke-dasharray': '2 4', opacity: 0.6 }));
+                const znum = (n, x, y) => { const t = svgEl('text', { x, y, 'text-anchor': 'middle', 'font-size': 13, fill: '#ffffff', opacity: 0.35, 'font-weight': 700 }); t.textContent = n; g.appendChild(t); };
+                znum(4, 50, 416); znum(3, 216, 416); znum(2, 382, 416); znum(5, 50, 748); znum(6, 216, 748); znum(1, 382, 748);
+            }
+
+            /* Jugadores que están fuera de cancha (los que salieron en un cambio) — NO se dibujan */
+            function isOutOfPlay(id) {
+                const subs = state.pizarra.subs || [];
+                return subs.some(s => s.outId === id);
+            }
+
+            function drawTokens() {
+                const layer = $('tokenLayer'); layer.innerHTML = '';
+                const subsIn = new Set((state.pizarra.subs || []).map(s => s.inId));
+                Object.keys(state.pizarra.positions).forEach(id => {
+                    if (isOutOfPlay(id)) return; // el que salió no se muestra
+                    const p = getPlayer(id); if (!p) return;
+                    const pos = state.pizarra.positions[id];
+                    const isLib = state.pizarra.liberoId === id || state.pizarra.subs.some(s => s.inId === id && getPlayer(s.outId)?.position === 'Líbero');
+                    const isSub = subsIn.has(id);
+                    const g = svgEl('g', { class: 'token', 'data-id': id, transform: `translate(${pos.x},${pos.y})` });
+                    if (isSub) g.appendChild(svgEl('circle', { r: C.r + 4, fill: 'none', stroke: '#fde047', 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }));
+                    g.appendChild(svgEl('circle', { r: C.r, fill: isLib ? POS_COLOR['Líbero'] : p.color, stroke: '#0b0f14', 'stroke-width': 2.5 }));
+                    const num = svgEl('text', { 'text-anchor': 'middle', y: 5, 'font-size': 17, 'font-weight': 800, fill: '#0b0f14' }); num.textContent = p.number; g.appendChild(num);
+                    const nm = svgEl('text', { 'text-anchor': 'middle', y: C.r + 14, 'font-size': 10, 'font-weight': 700, fill: '#e6edf3' }); nm.textContent = p.name.split(' ')[0]; g.appendChild(nm);
+                    layer.appendChild(g); enableDrag(g, id);
+                });
+            }
+
+            function svgPoint(evt) { const svg = courtSvg(), pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+
+            function enableDrag(g, id) {
+                let dragging = false, offX = 0, offY = 0; g.style.cursor = 'grab';
+                g.addEventListener('pointerdown', e => { if (boardMode !== 'mover') return; e.preventDefault(); dragging = true; g.setPointerCapture(e.pointerId); g.style.cursor = 'grabbing'; const p = svgPoint(e), cur = state.pizarra.positions[id]; offX = p.x - cur.x; offY = p.y - cur.y; g.classList.add('dragging'); });
+                g.addEventListener('pointermove', e => { if (!dragging) return; const p = svgPoint(e); let x = Math.max(C.left + 6, Math.min(C.right - 6, p.x - offX)), y = Math.max(state.pizarra.showRival ? C.rivTop + 6 : C.net + 6, Math.min(C.ourBot - 6, p.y - offY)); state.pizarra.positions[id] = { x, y }; g.setAttribute('transform', `translate(${x},${y})`); });
+                const end = () => { if (!dragging) return; dragging = false; g.style.cursor = 'grab'; g.classList.remove('dragging'); save(); };
+                g.addEventListener('pointerup', end); g.addEventListener('pointercancel', end);
+            }
+
+            function addConvToBoard() {
+                const list = convocados(); if (!list.length) { toast('No hay convocados.'); return; }
+                let i = 0; list.forEach(p => { if (!state.pizarra.positions[p.id]) { const col = i % 3, row = Math.floor(i / 3); state.pizarra.positions[p.id] = { x: C.left + 60 + col * 70, y: C.ourBot - 40 - row * 50 }; i++; } });
+                save(); drawTokens(); renderSubSelects(); toast('Convocados en la pizarra');
+            }
+
+            /* ---------- Rotaciones ---------- */
+            const BASE = { '5-1': ['S', 'OH1', 'MB1', 'OPP', 'OH2', 'MB2'], '4-2': ['OH1', 'S1', 'MB1', 'OH2', 'S2', 'MB2'] };
+            function roleAtZone(zone, rotation, system) { return BASE[system][(zone - 1 + rotation - 1) % 6]; }
+
+            // Construye {rol->playerId} respetando los cambios activos.
+            // Si hubo cambio outId→inId, inId hereda el slot del outId.
+            // Para MB1/MB2: rastreamos qué jugador originalmente era cada central.
+            function buildRoleMap() {
+                const sys = state.pizarra.system, list = convocados();
+                if (list.length < 6) return null;
+                // Mapa de sustituciones: si salió X y entró Y, Y hereda el ID de X para lookups
+                const subMap = {};
+                (state.pizarra.subs || []).forEach(s => { subMap[s.outId] = s.inId; });
+                const effective = id => { let cur = id; for (let i = 0; i < 10; i++) { if (subMap[cur]) cur = subMap[cur]; else break; } return cur; };
+
+                const pz = state.pizarra;
+                const used = new Set();
+                const take = id => { const eid = effective(id); if (eid && !used.has(eid) && list.find(p => p.id === eid)) { used.add(eid); return eid; } return null; };
+                // nextOf busca entre los que NO han sido usados Y pasan el filtro,
+                // pero también acepta sustitutos: si el candidato natural fue sustituido, usa al sustituto
+                const nextOfWithSub = fn => {
+                    // Primero buscar un jugador que pase el filtro y no esté usado
+                    let p = list.filter(p => !used.has(p.id) && fn(p))[0];
+                    if (!p) {
+                        // Buscar si algún convocado que ya salió (outId) pasaría el filtro, y usar su sustituto
+                        for (const s of (state.pizarra.subs || [])) {
+                            const orig = getPlayer(s.outId);
+                            if (orig && fn(orig) && !used.has(s.inId) && list.find(x => x.id === s.inId)) {
+                                p = { id: s.inId }; break;
+                            }
+                        }
+                    }
+                    if (!p) p = list.find(x => !used.has(x.id));
+                    if (p) used.add(p.id);
+                    return p ? p.id : null;
+                };
+                const map = {};
+                if (sys === '5-1') {
+                    map.S = take(pz.setterId) || nextOfWithSub(p => p.position === 'Armador'); if (map.S) pz.setterId = map.S;
+                    map.OPP = take(pz.oppId) || nextOfWithSub(p => p.position === 'Opuesto'); if (map.OPP) pz.oppId = map.OPP;
+                    map.MB1 = take(pz.mb1Id) || nextOfWithSub(p => p.position === 'Central'); if (map.MB1) pz.mb1Id = map.MB1;
+                    map.MB2 = take(pz.mb2Id) || nextOfWithSub(p => p.position === 'Central'); if (map.MB2) pz.mb2Id = map.MB2;
+                    map.OH1 = take(pz.oh1Id) || nextOfWithSub(p => p.position === 'Punta-Receptor'); if (map.OH1) pz.oh1Id = map.OH1;
+                    map.OH2 = take(pz.oh2Id) || nextOfWithSub(p => p.position === 'Punta-Receptor'); if (map.OH2) pz.oh2Id = map.OH2;
+                } else {
+                    map.S1 = take(pz.setterId) || nextOfWithSub(p => p.position === 'Armador'); if (map.S1) pz.setterId = map.S1;
+                    map.S2 = take(pz.setter2Id) || nextOfWithSub(p => p.position === 'Armador'); if (map.S2) pz.setter2Id = map.S2;
+                    map.MB1 = take(pz.mb1Id) || nextOfWithSub(p => p.position === 'Central'); if (map.MB1) pz.mb1Id = map.MB1;
+                    map.MB2 = take(pz.mb2Id) || nextOfWithSub(p => p.position === 'Central'); if (map.MB2) pz.mb2Id = map.MB2;
+                    map.OH1 = take(pz.oh1Id) || nextOfWithSub(p => p.position === 'Punta-Receptor'); if (map.OH1) pz.oh1Id = map.OH1;
+                    map.OH2 = take(pz.oh2Id) || nextOfWithSub(p => p.position === 'Punta-Receptor'); if (map.OH2) pz.oh2Id = map.OH2;
+                }
+                return map;
+            }
+
+            function applyLineup(animate) {
+                const map = buildRoleMap(); if (!map) { toast('Necesitás al menos 6 convocados'); return; }
+                const sys = state.pizarra.system, rot = state.pizarra.rotation, target = {};
+                for (let z = 1; z <= 6; z++) { const role = roleAtZone(z, rot, sys), pid = map[role]; if (pid) target[pid] = { ...ZONES[z] }; }
+                if (state.pizarra.useLibero && state.pizarra.liberoId) {
+                    const subMap = {}; (state.pizarra.subs || []).forEach(s => { subMap[s.outId] = s.inId; });
+                    const effective = id => { let cur = id; for (let i = 0; i < 10; i++) { if (subMap[cur]) cur = subMap[cur]; else break; } return cur; };
+                    const libId = effective(state.pizarra.liberoId);
+                    for (const z of [5, 6, 1]) { const role = roleAtZone(z, rot, sys), pid = map[role]; if ((role === 'MB1' || role === 'MB2') && pid && target[pid]) { target[libId] = { ...target[pid] }; target[pid] = { x: C.right + 10, y: C.ourBot - 40 }; break; } }
+                }
+                tweenTo(target, animate !== false); save();
+            }
+
+            function rotate(dir) {
+                state.pizarra.rotation = ((state.pizarra.rotation - 1 + (dir || 1) + 6) % 6) + 1;
+                $('pzRotLabel').textContent = 'R' + state.pizarra.rotation;
+                applyLineup(true);
+            }
+
+            function tweenTo(target, animate) {
+                const start = {}; Object.keys(target).forEach(id => { start[id] = state.pizarra.positions[id] || { ...target[id] }; if (!state.pizarra.positions[id]) state.pizarra.positions[id] = { ...target[id] }; });
+                drawTokens();
+                if (!animate) { Object.keys(target).forEach(id => state.pizarra.positions[id] = target[id]); drawTokens(); return; }
+                const layer = $('tokenLayer'), dur = 520, t0 = performance.now(), ease = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+                function frame(now) { const k = Math.min(1, (now - t0) / dur), e = ease(k); Object.keys(target).forEach(id => { const s = start[id], tg = target[id], x = s.x + (tg.x - s.x) * e, y = s.y + (tg.y - s.y) * e; state.pizarra.positions[id] = { x, y }; const g = layer.querySelector(`[data-id="${id}"]`); if (g) g.setAttribute('transform', `translate(${x},${y})`); }); if (k < 1) requestAnimationFrame(frame); else save(); }
+                requestAnimationFrame(frame);
+            }
+
+            function clearBoard() {
+                showConfirm('¿Sacar a todos los jugadores de la pizarra?', () => { state.pizarra.positions = {}; state.pizarra.subs = []; closePlay(); save(); drawTokens(); renderSubsList(); renderSubSelects(); toast('Pizarra vaciada'); });
+            }
+
+            /* ============================================================ CAMBIOS */
+            function renderSubsList() {
+                const wrap = $('subsList'); wrap.innerHTML = '';
+                const subs = state.pizarra.subs || [];
+                if (!subs.length) { wrap.innerHTML = '<p class="empty-sm">Sin cambios activos</p>'; return; }
+                subs.forEach((s, i) => {
+                    const pOut = getPlayer(s.outId), pIn = getPlayer(s.inId); if (!pOut || !pIn) return;
+                    const row = document.createElement('div'); row.className = 'sub-row';
+                    row.innerHTML = `<span class="sub-arrow">🔄</span><span class="sub-out"><span class="dot" style="background:${pOut.color}"></span>#${pOut.number} ${escapeHtml(pOut.name)}</span><span class="sub-sep">→</span><span class="sub-in"><span class="dot" style="background:${pIn.color}"></span>#${pIn.number} ${escapeHtml(pIn.name)}</span><button type="button" class="mini danger" data-unsub="${i}">✕</button>`;
+                    wrap.appendChild(row);
+                });
+                wrap.querySelectorAll('[data-unsub]').forEach(b => b.onclick = () => removeSub(parseInt(b.dataset.unsub)));
+            }
+
+            function applySub() {
+                const outId = $('subOut').value, inId = $('subIn').value;
+                if (!outId || !inId) { toast('Elegí los dos jugadores'); return; }
+                if (outId === inId) { toast('No podés elegir el mismo jugador'); return; }
+                const subs = state.pizarra.subs || [];
+                if (subs.find(s => s.outId === outId || s.inId === inId || s.outId === inId || s.inId === outId)) { toast('Ese jugador ya tiene un cambio activo'); return; }
+                // Posición: el entrante ocupa la posición del saliente
+                const posOut = state.pizarra.positions[outId];
+                state.pizarra.positions[inId] = posOut ? { ...posOut } : { x: C.left + 60, y: C.ourBot - 40 };
+                // El saliente queda en el estado pero isOutOfPlay() lo oculta del SVG
+                subs.push({ outId, inId }); state.pizarra.subs = subs;
+                // Si el que sale era el armador/opuesto/libero configurado, actualizar la cascada
+                const pz = state.pizarra;
+                if (pz.setterId === outId) pz.setterId = inId;
+                if (pz.setter2Id === outId) pz.setter2Id = inId;
+                if (pz.oppId === outId) pz.oppId = inId;
+                if (pz.liberoId === outId) pz.liberoId = inId;
+                if (pz.mb1Id === outId) pz.mb1Id = inId;
+                if (pz.mb2Id === outId) pz.mb2Id = inId;
+                if (pz.oh1Id === outId) pz.oh1Id = inId;
+                if (pz.oh2Id === outId) pz.oh2Id = inId;
+                save(); fillRoleSelects(); drawTokens(); renderSubsList(); renderSubSelects();
+                toast(`Cambio: #${getPlayer(outId).number} → #${getPlayer(inId).number}`);
+            }
+
+            function removeSub(idx) {
+                const s = state.pizarra.subs[idx]; if (!s) return;
+                // Restaurar: el saliente vuelve a la posición del entrante, el entrante sale
+                const posIn = state.pizarra.positions[s.inId];
+                if (posIn) state.pizarra.positions[s.outId] = { ...posIn };
+                delete state.pizarra.positions[s.inId];
+                // Revertir actualización de cascada
+                const pz = state.pizarra;
+                if (pz.setterId === s.inId) pz.setterId = s.outId;
+                if (pz.setter2Id === s.inId) pz.setter2Id = s.outId;
+                if (pz.oppId === s.inId) pz.oppId = s.outId;
+                if (pz.liberoId === s.inId) pz.liberoId = s.outId;
+                if (pz.mb1Id === s.inId) pz.mb1Id = s.outId;
+                if (pz.mb2Id === s.inId) pz.mb2Id = s.outId;
+                if (pz.oh1Id === s.inId) pz.oh1Id = s.outId;
+                if (pz.oh2Id === s.inId) pz.oh2Id = s.outId;
+                state.pizarra.subs.splice(idx, 1);
+                save(); fillRoleSelects(); drawTokens(); renderSubsList(); renderSubSelects();
+            }
+
+            function renderSubSelects() {
+                const list = convocados();
+                const blank = '<option value="">—</option>';
+                const inCourt = list.filter(p => { const pos = state.pizarra.positions[p.id]; return pos && pos.y >= C.net && pos.y <= C.ourBot && pos.x >= C.left && pos.x <= C.right && !isOutOfPlay(p.id); });
+                const bench = list.filter(p => !inCourt.find(x => x.id === p.id));
+                const opt = p => `<option value="${p.id}">#${p.number} ${escapeHtml(p.name)}</option>`;
+                $('subOut').innerHTML = blank + (inCourt.length ? inCourt.map(opt).join('') : list.map(opt).join(''));
+                $('subIn').innerHTML = blank + (inCourt.length ? bench.map(opt).join('') : list.map(opt).join(''));
+            }
+
+            /* ============================================================ JUGADAS */
+            // Posición del armador al armar: entre z2 y z3 cerca de la red
+            const ARM_POS = { x: 300, y: 428 };
+
+            const PLAYS = {
+                p4: {
+                    label: 'Ataque por 4 (punta izq.)', cat: 'ataque', target: { x: 340, y: 148 },
+                    bloqueo: [{ x: 96, y: 372 }, { x: 150, y: 372 }], defensa: [{ x: 300, y: 130 }, { x: 216, y: 110 }, { x: 96, y: 130 }], cobertura: [{ x: 150, y: 500 }, { x: 70, y: 510 }, { x: 60, y: 440 }]
+                },
+                p2: {
+                    label: 'Ataque por 2 (punta der.)', cat: 'ataque', target: { x: 100, y: 148 },
+                    bloqueo: [{ x: 336, y: 372 }, { x: 282, y: 372 }], defensa: [{ x: 130, y: 130 }, { x: 216, y: 110 }, { x: 336, y: 130 }], cobertura: [{ x: 282, y: 500 }, { x: 362, y: 510 }, { x: 372, y: 440 }]
+                },
+                p3: {
+                    label: 'Ataque por 3 (1er tiempo)', cat: 'ataque', target: { x: 150, y: 168 },
+                    bloqueo: [{ x: 180, y: 372 }, { x: 252, y: 372 }], defensa: [{ x: 120, y: 150 }, { x: 300, y: 150 }, { x: 216, y: 120 }], cobertura: [{ x: 150, y: 500 }, { x: 282, y: 500 }, { x: 216, y: 520 }]
+                },
+                p6: {
+                    label: 'Ataque por 6 (pipe)', cat: 'ataque', target: { x: 216, y: 148 },
+                    bloqueo: [{ x: 180, y: 372 }, { x: 252, y: 372 }], defensa: [{ x: 120, y: 140 }, { x: 312, y: 140 }, { x: 216, y: 110 }], cobertura: [{ x: 150, y: 600 }, { x: 282, y: 600 }, { x: 216, y: 640 }]
+                },
+                p1: {
+                    label: 'Ataque por 1 (zaguero der.)', cat: 'ataque', target: { x: 130, y: 158 },
+                    bloqueo: [{ x: 300, y: 372 }, { x: 246, y: 372 }], defensa: [{ x: 130, y: 140 }, { x: 240, y: 120 }, { x: 96, y: 160 }], cobertura: [{ x: 300, y: 600 }, { x: 360, y: 590 }, { x: 282, y: 640 }]
+                },
+                recepcion: { label: 'Recepción de saque', cat: 'recepcion' },
+                def_line: { label: 'Defensa en línea', cat: 'defensa' },
+                def_diagonal: { label: 'Defensa diagonal', cat: 'defensa' },
+            };
+
+            // Tabla de movimientos pre-jugada por rotación (5-1).
+            // Qué rol ataca y destinos de cada rol. 'zN'=ZONES[N], 'ARM'=ARM_POS.
+            // MB atrás omitido: el líbero ya ocupa esa posición en cancha.
+            // R1:z1=S  z2=OH1 z3=MB1 z4=OPP z5=OH2 z6=MB2
+            // R2:z1=OH1 z2=MB1 z3=OPP z4=OH2 z5=MB2 z6=S
+            // R3:z1=MB1 z2=OPP z3=OH2 z4=MB2 z5=S   z6=OH1
+            // R4:z1=OPP z2=OH2 z3=MB2 z4=S   z5=OH1 z6=MB1
+            // R5:z1=OH2 z2=MB2 z3=S   z4=OH1 z5=MB1 z6=OPP
+            // R6:z1=MB2 z2=S   z3=OH1 z4=MB1 z5=OPP z6=OH2
+            const PLAY_MOVES = {
+                p4: {
+                    1: { atk: 'OH1', S: 'ARM', OH1: 'z4', OPP: 'z2', MB1: 'z3', OH2: 'z5' },
+                    2: { atk: 'OH2', S: 'ARM', OH2: 'z4', OPP: 'z2', MB1: 'z3', OH1: 'z1' },
+                    3: { atk: 'OH2', S: 'ARM', OH2: 'z4', MB2: 'z3', OPP: 'z2', OH1: 'z6' },
+                    4: { atk: 'OH2', S: 'ARM', OH2: 'z4', OPP: 'z2', MB2: 'z3', OH1: 'z5' },
+                    5: { atk: 'OH1', S: 'ARM', OH1: 'z4', MB2: 'z3', OPP: 'z1', OH2: 'z6' },
+                    6: { atk: 'OH1', S: 'ARM', OH1: 'z4', MB1: 'z3', OPP: 'z1', OH2: 'z6' },
+                },
+                p2: {
+                    1: { atk: 'OPP', S: 'ARM', OPP: 'z2', OH1: 'z4', MB1: 'z3', OH2: 'z5' },
+                    2: { atk: 'OPP', S: 'ARM', OPP: 'z2', OH2: 'z4', MB1: 'z3', OH1: 'z1' },
+                    3: { atk: 'OPP', S: 'ARM', OPP: 'z2', OH2: 'z4', MB2: 'z3', OH1: 'z6' },
+                    4: { atk: 'OPP', S: 'ARM', OPP: 'z2', OH2: 'z4', MB2: 'z3', OH1: 'z5' },
+                    5: { atk: 'OH1', S: 'ARM', OH1: 'z2', MB2: 'z3', OPP: 'z1', OH2: 'z6' },
+                    6: { atk: 'OPP', S: 'ARM', OPP: 'z2', OH2: 'z4', MB1: 'z3', OH1: 'z6' },
+                },
+                p3: {
+                    1: { atk: 'MB1', S: 'ARM', MB1: 'z3', OPP: 'z2', OH1: 'z4', OH2: 'z5' },
+                    2: { atk: 'MB1', S: 'ARM', MB1: 'z3', OPP: 'z2', OH2: 'z4', OH1: 'z1' },
+                    3: { atk: 'MB2', S: 'ARM', MB2: 'z3', OPP: 'z2', OH2: 'z4', OH1: 'z6' },
+                    4: { atk: 'MB2', S: 'ARM', MB2: 'z3', OPP: 'z2', OH2: 'z4', OH1: 'z5' },
+                    5: { atk: 'MB2', S: 'ARM', MB2: 'z3', OPP: 'z1', OH1: 'z4', OH2: 'z6' },
+                    6: { atk: 'MB1', S: 'ARM', MB1: 'z3', OPP: 'z1', OH2: 'z4', OH1: 'z6' },
+                },
+                p6: {
+                    1: { atk: 'OH2', S: 'ARM', OH2: 'z6', MB1: 'z3', OPP: 'z2', OH1: 'z4' },
+                    2: { atk: 'OH1', S: 'ARM', OH1: 'z6', MB1: 'z3', OPP: 'z2', OH2: 'z4' },
+                    3: { atk: 'OH1', S: 'ARM', OH1: 'z6', MB2: 'z3', OPP: 'z2', OH2: 'z4' },
+                    4: { atk: 'OH1', S: 'ARM', OH1: 'z6', MB2: 'z3', OPP: 'z2', OH2: 'z4' },
+                    5: { atk: 'OH2', S: 'ARM', OH2: 'z6', MB2: 'z3', OPP: 'z1', OH1: 'z4' },
+                    6: { atk: 'OH2', S: 'ARM', OH2: 'z6', MB1: 'z3', OPP: 'z1', OH1: 'z4' },
+                },
+                p1: {
+                    1: { atk: 'OH2', S: 'ARM', OH2: 'z1', MB1: 'z3', OPP: 'z2', OH1: 'z4' },
+                    2: { atk: 'OH1', S: 'ARM', OH1: 'z1', MB1: 'z3', OPP: 'z2', OH2: 'z4' },
+                    3: { atk: 'OH1', S: 'ARM', OH1: 'z1', MB2: 'z3', OPP: 'z2', OH2: 'z4' },
+                    4: { atk: 'OPP', S: 'ARM', OPP: 'z1', MB2: 'z3', OH2: 'z4', OH1: 'z5' },
+                    5: { atk: 'OPP', S: 'ARM', OPP: 'z1', MB2: 'z3', OH1: 'z4', OH2: 'z6' },
+                    6: { atk: 'OPP', S: 'ARM', OPP: 'z1', MB1: 'z3', OH2: 'z4', OH1: 'z6' },
+                },
+            };
+
+
+            // Convierte 'z4' → ZONES[4], 'ARM' → ARM_POS
+            function resolvePos(key) { if (key === 'ARM') return { ...ARM_POS }; const n = parseInt(key[1]); return { ...ZONES[n] }; }
+
+            // Dado el mapa de roles→jugadores y la tabla de movimientos de rol,
+            // devuelve {playerId → posición destino}.
+            // Los MB que están en zaguera con líbero activo NO se incluyen (el líbero los reemplaza).
+            function buildPlayerMovements(map, roleMoves) {
+                if (!map) return {};
+                // Determinar qué MB está atrás y tiene líbero cubriéndolo
+                const rot = state.pizarra.rotation, sys = state.pizarra.system;
+                const mbBackIds = new Set();
+                if (state.pizarra.useLibero && state.pizarra.liberoId) {
+                    const subMap = {}; (state.pizarra.subs || []).forEach(s => { subMap[s.outId] = s.inId; });
+                    const eff = id => { let c = id; for (let i = 0; i < 10; i++) { if (subMap[c]) c = subMap[c]; else break; } return c; };
+                    const libId = eff(state.pizarra.liberoId);
+                    // El MB que está en zona zaguera es reemplazado
+                    for (const z of [5, 6, 1]) {
+                        const role = roleAtZone(z, rot, sys);
+                        if ((role === 'MB1' || role === 'MB2') && map[role]) mbBackIds.add(map[role]);
+                    }
+                }
+                const moves = {};
+                for (const [role, dest] of Object.entries(roleMoves)) {
+                    const pid = map[role];
+                    if (!pid) continue;
+                    if (mbBackIds.has(pid)) continue; // MB atrás con líbero → no aparece
+                    moves[pid] = resolvePos(dest);
+                }
+                return moves;
+            }
+
+            function posOf(id) { return (id && state.pizarra.positions[id]) ? { ...state.pizarra.positions[id] } : null; }
+
+            let playState = { key: null, raf: null, t0: 0, showDef: false, render: null, lastProg: 0 };
+            const PLAY_DUR = 2800;
+
+            function selectPlay(key) {
+                if (playState.key === key) { closePlay(); return; }
+                stopPlay(); playState.key = key;
+                document.querySelectorAll('.play-btn').forEach(b => b.classList.toggle('on', b.dataset.play === key));
+                $('playControls').style.display = ''; $('playTitle').textContent = PLAYS[key].label; $('playPauseBtn').textContent = '⏸ Pausa';
+                $('courtSvg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const play = PLAYS[key];
+                if (play.cat === 'ataque') setTimeout(() => { if (playState.key === key) runPlayAtaque(0); }, 900);
+                else if (play.cat === 'recepcion') setTimeout(() => { if (playState.key === key) renderPlayRecepcion(); }, 600);
+                else if (play.cat === 'defensa') setTimeout(() => { if (playState.key === key) renderPlayDefensa(key); }, 600);
+            }
+
+            function segLen(a, b) { return Math.hypot(b.x - a.x, b.y - a.y); }
+
+            function runPlayAtaque(startProg) {
+                if (!playState.key) return;
+                if (playState.raf) { cancelAnimationFrame(playState.raf); playState.raf = null; }
+                const play = PLAYS[playState.key]; if (play.cat !== 'ataque') return;
+                const map = buildRoleMap(); if (!map) { toast('Configurá al menos 6 convocados'); return; }
+                const rot = state.pizarra.rotation;
+                const roleConf = PLAY_MOVES[playState.key][rot];
+                if (!roleConf) { toast('Jugada no disponible para esta rotación'); return; }
+
+                // Resolvemos los movimientos de todos los jugadores
+                const movements = buildPlayerMovements(map, Object.fromEntries(
+                    Object.entries(roleConf).filter(([k]) => k !== 'atk')
+                ));
+
+                // Atacante y receptor
+                const atkRole = roleConf.atk;
+                const atkId = map[atkRole] || null;
+                const setterId = map.S || map.S1;
+                // Receptor: el OH que NO es el atacante (está en zaguera recibiendo)
+                const sys = state.pizarra.system;
+                let recvId = null;
+                for (const z of [5, 6, 1]) {
+                    const role = roleAtZone(z, rot, sys);
+                    if ((role === 'OH1' || role === 'OH2') && map[role] && map[role] !== map[roleConf.atk]) {
+                        recvId = map[role]; break;
+                    }
+                }
+                if (!recvId) {
+                    const atkId2 = map[roleConf.atk];
+                    recvId = ['OH1', 'OH2'].map(r => map[r]).find(pid => pid && pid !== atkId2) || null;
+                }
+
+                // Posición destino del atacante (de los movements)
+                const atkDest = atkId ? movements[atkId] : null;
+                // Posición del atacante: destino si lo tiene, o su posición actual
+                const atkPos = atkDest || posOf(atkId) || ARM_POS;
+                // Posición del receptor: su posición actual en cancha
+                const recvPos = posOf(recvId) || ARM_POS;
+
+                // tokenStart: posiciones actuales antes del movimiento
+                const tokenStart = {};
+                Object.keys(movements).forEach(id => { tokenStart[id] = posOf(id) || { ...movements[id] }; });
+
+                // Trayectoria pelota: receptor → ARM_POS → atacante → target
+                const path = [recvPos, ARM_POS, atkPos, play.target];
+                const lens = []; let total = 0;
+                for (let i = 0; i < path.length - 1; i++) { const l = segLen(path[i], path[i + 1]); lens.push(l); total += l; }
+
+                const overlay = $('playLayer');
+                const ease = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+                function renderProg(progress) {
+                    overlay.innerHTML = '';
+                    // trayectoria guía
+                    let d = `M ${path[0].x} ${path[0].y}`; for (let i = 1; i < path.length; i++) d += ` L ${path[i].x} ${path[i].y}`;
+                    overlay.appendChild(svgEl('path', { d, fill: 'none', stroke: '#fde047', 'stroke-width': 2, 'stroke-dasharray': '5 5', opacity: 0.3 }));
+
+                    // Mover todos los tokens durante el primer 45%
+                    const eMov = ease(Math.min(1, progress / 0.45));
+                    Object.keys(movements).forEach(id => {
+                        const s = tokenStart[id], tg = movements[id], x = s.x + (tg.x - s.x) * eMov, y = s.y + (tg.y - s.y) * eMov;
+                        const g = $('tokenLayer').querySelector(`[data-id="${id}"]`);
+                        if (g) g.setAttribute('transform', `translate(${x},${y})`);
+                        if (progress >= 0.99) state.pizarra.positions[id] = { x, y };
+                    });
+
+                    // Etiquetas
+                    const setterLbl = setterId ? (getPlayer(setterId)?.number ? '#' + getPlayer(setterId).number : 'A') : 'A';
+                    const recvLbl = recvId ? (getPlayer(recvId)?.number ? '#' + getPlayer(recvId).number : 'R') : 'R';
+                    const atkLbl = atkId ? (getPlayer(atkId)?.number ? '#' + getPlayer(atkId).number : 'Atk') : 'Atk';
+                    labelDot(overlay, ARM_POS, setterLbl, '#f59e0b');
+                    labelDot(overlay, recvPos, recvLbl, '#10b981');
+
+                    if (playState.showDef) {
+                        play.bloqueo.forEach(p => labelDot(overlay, p, 'B', '#0b0f14', '#ef4444'));
+                        play.defensa.forEach(p => labelDot(overlay, p, 'D', '#0b0f14', '#f97316'));
+                        play.cobertura.forEach(p => labelDot(overlay, p, 'C', '#0b0f14', '#22d3ee'));
+                        labelDot(overlay, atkPos, atkLbl, '#0b0f14', '#fde047');
+                    }
+
+                    // Línea de pase armador→atacante
+                    overlay.appendChild(svgEl('line', { x1: ARM_POS.x, y1: ARM_POS.y, x2: atkPos.x, y2: atkPos.y, stroke: '#22d3ee', 'stroke-width': 2.5, 'stroke-dasharray': '4 4' }));
+
+                    // Pelota
+                    const dist = progress * total; let acc = 0, idx = 0;
+                    while (idx < lens.length - 1 && acc + lens[idx] < dist) { acc += lens[idx]; idx++; }
+                    const segP = lens[idx] > 0 ? Math.min(1, (dist - acc) / lens[idx]) : 1;
+                    const pa = path[idx], pb = path[idx + 1] || path[idx];
+                    const bx = pa.x + (pb.x - pa.x) * segP, by = pa.y + (pb.y - pa.y) * segP;
+                    if (idx >= 2) arrow(overlay, atkPos, { x: bx, y: by }, '#fde047', 4);
+                    overlay.appendChild(svgEl('circle', { cx: bx, cy: by, r: 9, fill: '#fde047', stroke: '#0b0f14', 'stroke-width': 2 }));
+                    playState.lastProg = progress;
+                }
+                playState.render = renderProg;
+                playState.t0 = performance.now() - startProg * PLAY_DUR;
+                $('playPauseBtn').textContent = '⏸ Pausa';
+                function frame(now) { const prog = Math.min(1, (now - playState.t0) / PLAY_DUR); renderProg(prog); if (prog < 1) playState.raf = requestAnimationFrame(frame); else { playState.raf = null; save(); $('playPauseBtn').textContent = '▶ Repetir'; } }
+                playState.raf = requestAnimationFrame(frame);
+            }
+
+            /* ---------- Recepción: W-shape con jugadores reales ---------- */
+            // En 5-1, los receptores son los OH y el líbero (o MB si no hay libero).
+            // El armador cuando está en zona zaguera corre al frente.
+            // Zonas de recepción por rotación: los OH siempre reciben, armador y opuesto libres.
+            function renderPlayRecepcion() {
+                const overlay = $('playLayer'); overlay.innerHTML = '';
+                const map = buildRoleMap(); if (!map) { toast('Configurá el equipo primero'); return; }
+                const rot = state.pizarra.rotation, sys = state.pizarra.system;
+                const setterId = map.S || map.S1;
+                const oppId = map.OPP || map.S2; // opuesto (o 2do armador en 4-2)
+
+                // Receptores: OH1, OH2 y el líbero (o quien esté en zaguera si no hay libero)
+                // Posiciones W estándar para recepción
+                const W_POS = [
+                    { x: 110, y: 685 }, // izquierda
+                    { x: 216, y: 710 }, // centro
+                    { x: 322, y: 685 }, // derecha
+                    { x: 165, y: 635 }, // izq-centro
+                    { x: 267, y: 635 }, // der-centro
+                ];
+                // Armar lista de receptores: los que no son armador ni opuesto
+                const receivers = [];
+                const allRoles = sys === '5-1' ? ['OH1', 'OH2', 'MB1', 'MB2'] : ['OH1', 'OH2', 'MB1', 'MB2'];
+                allRoles.forEach(role => {
+                    let pid = map[role] || null;
+                    if (pid === setterId || pid === oppId) return; // armador y opuesto no reciben
+                    // Si el líbero reemplaza al central en zaguera
+                    if (state.pizarra.useLibero && state.pizarra.liberoId && (role === 'MB1' || role === 'MB2')) {
+                        const zOfRole = [1, 2, 3, 4, 5, 6].find(z => roleAtZone(z, rot, sys) === role);
+                        if (zOfRole && zOfRole > 3) pid = state.pizarra.liberoId; // solo en zaguera
+                    }
+                    if (pid && !receivers.includes(pid)) receivers.push(pid);
+                });
+
+                // Dibujar W con jugadores reales
+                const wSlots = Math.min(receivers.length, W_POS.length);
+                for (let i = 0; i < wSlots; i++) {
+                    const pid = receivers[i], p = getPlayer(pid);
+                    const wp = W_POS[i];
+                    const curPos = posOf(pid);
+                    // Flecha de movimiento
+                    if (curPos) { const dist = Math.hypot(wp.x - curPos.x, wp.y - curPos.y); if (dist > 25) arrow(overlay, curPos, wp, '#10b981', 2); }
+                    // Círculo en posición W
+                    overlay.appendChild(svgEl('circle', { cx: wp.x, cy: wp.y, r: C.r, fill: p ? p.color : '#10b981', opacity: 0.9, stroke: '#0b0f14', 'stroke-width': 2 }));
+                    const num = svgEl('text', { x: wp.x, y: wp.y + 5, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 800, fill: '#0b0f14' }); num.textContent = p ? ('#' + p.number) : 'R'; overlay.appendChild(num);
+                    if (p) { const nm = svgEl('text', { x: wp.x, y: wp.y + C.r + 12, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 700, fill: '#e6edf3' }); nm.textContent = p.name.split(' ')[0]; overlay.appendChild(nm); }
+                }
+
+                // Armador: posición de arme (desde su posición actual → ARM_POS)
+                const setterCurPos = posOf(setterId);
+                if (setterCurPos) { const dist = Math.hypot(ARM_POS.x - setterCurPos.x, ARM_POS.y - setterCurPos.y); if (dist > 25) arrow(overlay, setterCurPos, ARM_POS, '#f59e0b', 2); }
+                const sp = ARM_POS;
+                overlay.appendChild(svgEl('circle', { cx: sp.x, cy: sp.y, r: C.r, fill: '#f59e0b', opacity: 0.9, stroke: '#0b0f14', 'stroke-width': 2, 'stroke-dasharray': '4 3' }));
+                { const t = svgEl('text', { x: sp.x, y: sp.y + 5, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 800, fill: '#0b0f14' }); t.textContent = setterId ? ('#' + getPlayer(setterId)?.number) : 'A'; overlay.appendChild(t); }
+
+                // Opuesto: posición frontal derecha (siempre libre)
+                if (oppId && oppId !== setterId) {
+                    const op = getPlayer(oppId); const oppPos = { x: 336, y: 455 };
+                    const curOpp = posOf(oppId); if (curOpp) { const d = Math.hypot(oppPos.x - curOpp.x, oppPos.y - curOpp.y); if (d > 25) arrow(overlay, curOpp, oppPos, '#ef4444', 1.5); }
+                    overlay.appendChild(svgEl('circle', { cx: oppPos.x, cy: oppPos.y, r: C.r, fill: op ? op.color : '#ef4444', opacity: 0.5, stroke: '#0b0f14', 'stroke-width': 1.5 }));
+                    if (op) { const t = svgEl('text', { x: oppPos.x, y: oppPos.y + 5, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 800, fill: '#0b0f14' }); t.textContent = '#' + op.number; overlay.appendChild(t); }
+                }
+
+                // Pelota de saque desde arriba
+                const saqueY = state.pizarra.showRival ? C.rivTop + 30 : C.net - 28;
+                arrow(overlay, { x: 216, y: saqueY }, { x: 216, y: saqueY + 100 }, '#ef4444', 3);
+                overlay.appendChild(svgEl('circle', { cx: 216, cy: saqueY, r: 9, fill: '#fde047', stroke: '#0b0f14', 'stroke-width': 2 }));
+
+                $('playPauseBtn').textContent = '—'; playState.render = null; playState.lastProg = 1;
+            }
+
+            /* ---------- Defensa ---------- */
+            // Defensa en línea: bloqueo doble, zagueros en línea detrás, libero en 6
+            // Defensa diagonal: bloqueo doble, zagueros en diagonal
+            function renderPlayDefensa(key) {
+                const overlay = $('playLayer'); overlay.innerHTML = '';
+                const map = buildRoleMap();
+                const rot = state.pizarra.rotation, sys = state.pizarra.system;
+                const setterId = map ? (map.S || map.S1) : null;
+                const oppId = map ? map.OPP : null;
+                const subMap = {}; (state.pizarra.subs || []).forEach(s => { subMap[s.outId] = s.inId; });
+                const effective = id => { let cur = id; for (let i = 0; i < 10; i++) { if (subMap[cur]) cur = subMap[cur]; else break; } return cur; };
+                const libId = state.pizarra.liberoId ? effective(state.pizarra.liberoId) : null;
+
+                // Posiciones de bloqueo: los 2 delanteros que no son el atacante principal blocan
+                const isLine = key === 'def_line';
+
+                // Bloqueadores: los que están en zona 2-4 (delantera) → van a posiciones de bloqueo en la red
+                const BLOK_POS = [{ x: 160, y: 406 }, { x: 240, y: 406 }]; // dos bloqueadores juntos en la red
+                const frontZones = [4, 3, 2];
+                const frontPlayers = frontZones.map(z => { const r = roleAtZone(z, rot, sys); return map ? map[r] : null; }).filter(Boolean).slice(0, 2);
+
+                // Defensores zagueros
+                const backZones = [5, 6, 1];
+                const backPlayers = backZones.map(z => {
+                    const r = roleAtZone(z, rot, sys); let pid = map ? map[r] : null;
+                    if (state.pizarra.useLibero && libId && (r === 'MB1' || r === 'MB2')) pid = libId;
+                    return pid;
+                }).filter(Boolean);
+
+                // Posiciones defensivas zagueras
+                const BACK_LINE = isLine
+                    ? [{ x: 96, y: 682 }, { x: 216, y: 700 }, { x: 336, y: 682 }]   // en línea (3 atrás)
+                    : [{ x: 80, y: 660 }, { x: 216, y: 700 }, { x: 350, y: 660 }];   // diagonal
+
+                // Posición del libero: en 6 (centro zaguero) en línea, más adelante en diagonal
+                const LIB_POS = isLine ? { x: 216, y: 650 } : { x: 196, y: 618 };
+
+                // Dibujar bloqueadores
+                frontPlayers.forEach((pid, i) => {
+                    const p = getPlayer(pid); const bp = BLOK_POS[i] || BLOK_POS[0];
+                    const cur = posOf(pid); if (cur) { const d = Math.hypot(bp.x - cur.x, bp.y - cur.y); if (d > 25) arrow(overlay, cur, bp, '#ef4444', 2); }
+                    overlay.appendChild(svgEl('circle', { cx: bp.x, cy: bp.y, r: C.r, fill: p ? p.color : '#3b82f6', opacity: 0.9, stroke: '#ef4444', 'stroke-width': 3 }));
+                    const t = svgEl('text', { x: bp.x, y: bp.y + 5, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 800, fill: '#0b0f14' }); t.textContent = p ? ('#' + p.number) : 'B'; overlay.appendChild(t);
+                    // etiqueta "B"
+                    const bl = svgEl('text', { x: bp.x, y: bp.y - C.r - 4, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 800, fill: '#ef4444' }); bl.textContent = 'BLOQUEO'; overlay.appendChild(bl);
+                });
+
+                // Dibujar defensores zagueros
+                let backIdx = 0;
+                backPlayers.forEach(pid => {
+                    if (!pid) return;
+                    const p = getPlayer(pid);
+                    const isLib = pid === libId;
+                    const dp = isLib ? LIB_POS : (BACK_LINE[backIdx] || BACK_LINE[backIdx % 3]);
+                    if (!isLib) backIdx++;
+                    const cur = posOf(pid); if (cur) { const d = Math.hypot(dp.x - cur.x, dp.y - cur.y); if (d > 25) arrow(overlay, cur, dp, '#22d3ee', 2); }
+                    overlay.appendChild(svgEl('circle', { cx: dp.x, cy: dp.y, r: C.r, fill: isLib ? POS_COLOR['Líbero'] : (p ? p.color : '#10b981'), opacity: 0.9, stroke: '#22d3ee', 'stroke-width': 2.5 }));
+                    const t = svgEl('text', { x: dp.x, y: dp.y + 5, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 800, fill: '#0b0f14' }); t.textContent = p ? ('#' + p.number) : 'D'; overlay.appendChild(t);
+                });
+
+                // Ataque rival desde arriba
+                const atkFrom = { x: 216, y: state.pizarra.showRival ? C.rivTop + 70 : C.net - 15 };
+                arrow(overlay, atkFrom, { x: 216, y: 630 }, '#fde047', 4);
+                overlay.appendChild(svgEl('circle', { cx: atkFrom.x, cy: atkFrom.y, r: 9, fill: '#fde047', stroke: '#0b0f14', 'stroke-width': 2 }));
+                // Leyenda
+                const legY = C.ourBot - 8;
+                const legTxt = svgEl('text', { x: C.left + 4, y: legY, 'font-size': 10, fill: '#9fb3c8' }); legTxt.textContent = (isLine ? 'Defensa en línea' : 'Defensa diagonal') + ' · ←B=bloqueo · →D=defensa'; overlay.appendChild(legTxt);
+
+                $('playPauseBtn').textContent = '—'; playState.render = null; playState.lastProg = 1;
+            }
+
+            function labelDot(layer, p, txt, fg, bg) {
+                layer.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: 14, fill: bg || '#e6edf3', stroke: '#0b0f14', 'stroke-width': 2, opacity: 0.95 }));
+                const t = svgEl('text', { x: p.x, y: p.y + 5, 'text-anchor': 'middle', 'font-size': txt.length > 3 ? 8 : 11, 'font-weight': 800, fill: fg }); t.textContent = txt; layer.appendChild(t);
+            }
+            function arrow(layer, a, b, color, w) {
+                layer.appendChild(svgEl('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: color, 'stroke-width': w, 'stroke-linecap': 'round' }));
+                const ang = Math.atan2(b.y - a.y, b.x - a.x), s = 11;
+                layer.appendChild(svgEl('polygon', { points: `${b.x},${b.y} ${b.x - s * Math.cos(ang - 0.4)},${b.y - s * Math.sin(ang - 0.4)} ${b.x - s * Math.cos(ang + 0.4)},${b.y - s * Math.sin(ang + 0.4)}`, fill: color }));
+            }
+
+            function togglePlayPause() {
+                if (!playState.key) return;
+                const play = PLAYS[playState.key]; if (play.cat !== 'ataque') return;
+                if (playState.raf) { cancelAnimationFrame(playState.raf); playState.raf = null; $('playPauseBtn').textContent = '▶ Seguir'; }
+                else runPlayAtaque(playState.lastProg >= 1 ? 0 : playState.lastProg);
+            }
+            function restartPlay() {
+                if (!playState.key) return;
+                if (playState.raf) { cancelAnimationFrame(playState.raf); playState.raf = null; }
+                const play = PLAYS[playState.key];
+                if (play.cat === 'ataque') runPlayAtaque(0);
+                else if (play.cat === 'recepcion') renderPlayRecepcion();
+                else if (play.cat === 'defensa') renderPlayDefensa(playState.key);
+            }
+            function stopPlay() { if (playState.raf) { cancelAnimationFrame(playState.raf); playState.raf = null; } $('playLayer').innerHTML = ''; playState.lastProg = 0; playState.render = null; }
+            function toggleDefense() { playState.showDef = !playState.showDef; $('defBtn').classList.toggle('on', playState.showDef); if (playState.key && !playState.raf && playState.render) playState.render(playState.lastProg); }
+            function closePlay() { stopPlay(); playState.key = null; document.querySelectorAll('.play-btn').forEach(b => b.classList.remove('on')); $('playControls').style.display = 'none'; }
+
+            /* ============================================================ DIBUJO */
+            let drawingNow = null;
+            function setupDrawLayer() {
+                const svg = courtSvg();
+                svg.addEventListener('pointerdown', e => { if (boardMode !== 'dibujar') return; const p = svgPoint(e); drawingNow = { type: drawTool, color: drawColor, pts: [{ x: p.x, y: p.y }] }; svg.setPointerCapture(e.pointerId); });
+                svg.addEventListener('pointermove', e => { if (boardMode !== 'dibujar' || !drawingNow) return; const p = svgPoint(e); if (drawTool === 'pen') drawingNow.pts.push({ x: p.x, y: p.y }); else drawingNow.pts[1] = { x: p.x, y: p.y }; renderDrawingPreview(); });
+                const finish = () => { if (!drawingNow) return; if (drawingNow.pts.length > 1) { state.pizarra.drawings.push(drawingNow); save(); } drawingNow = null; drawDrawings(); };
+                svg.addEventListener('pointerup', finish); svg.addEventListener('pointercancel', finish);
+            }
+            function renderDrawingPreview() { drawDrawings(); if (drawingNow) renderOneDrawing($('drawLayer'), drawingNow); }
+            function renderOneDrawing(layer, dr) {
+                if (dr.type === 'pen') { const d = dr.pts.map((p, i) => (i ? 'L' : 'M') + ' ' + p.x + ' ' + p.y).join(' '); layer.appendChild(svgEl('path', { d, fill: 'none', stroke: dr.color, 'stroke-width': 3.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })); }
+                else if (dr.pts.length >= 2) arrow(layer, dr.pts[0], dr.pts[1], dr.color, 3.5);
+            }
+            function drawDrawings() { const layer = $('drawLayer'); layer.innerHTML = ''; state.pizarra.drawings.forEach(dr => renderOneDrawing(layer, dr)); }
+            function clearDrawings() { state.pizarra.drawings = []; save(); drawDrawings(); }
+            function setMode(m) { boardMode = m; updateModeUI(); }
+            function updateModeUI() { $('modeMover').classList.toggle('on', boardMode === 'mover'); $('modeDibujar').classList.toggle('on', boardMode === 'dibujar'); $('drawTools').style.display = boardMode === 'dibujar' ? 'flex' : 'none'; courtSvg().style.touchAction = boardMode === 'dibujar' ? 'none' : 'auto'; }
+
+            function exportBoardPNG() {
+                const svg = courtSvg(), clone = svg.cloneNode(true);
+                const vb = svg.getAttribute('viewBox').split(' ').map(Number), w = vb[2], h = vb[3], sc = 2;
+                clone.setAttribute('width', w * sc); clone.setAttribute('height', h * sc);
+                const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob), img = new Image();
+                img.onload = () => { const cv = document.createElement('canvas'); cv.width = w * sc; cv.height = h * sc; const ctx = cv.getContext('2d'); ctx.fillStyle = '#0e171f'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.drawImage(img, 0, 0); URL.revokeObjectURL(url); cv.toBlob(b => downloadBlob(b, `pizarra_${dstamp()}.png`)); };
+                img.onerror = () => toast('No se pudo exportar'); img.src = url;
+            }
+
+            /* ============================================================ ESTADÍSTICAS */
+            function blankStat() { return { sb: 0, se: 0, ab: 0, ae: 0, pb: 0, pe: 0, arm_b: 0, arm_e: 0, def_b: 0, def_e: 0 }; }
+            function getStatDefs(p) {
+                if (!p) return DEFS_DEFAULT;
+                if (p.position === 'Armador') return DEFS_SETTER;
+                if (p.position === 'Líbero') return DEFS_LIBERO;
+                return DEFS_DEFAULT;
+            }
+            const DEFS_DEFAULT = [{ key: 'sb', label: 'Saque ✓', cls: 'good' }, { key: 'se', label: 'Saque ✗', cls: 'bad' }, { key: 'ab', label: 'Ataque ✓', cls: 'good' }, { key: 'ae', label: 'Ataque ✗', cls: 'bad' }, { key: 'pb', label: 'Recep. ✓', cls: 'good' }, { key: 'pe', label: 'Recep. ✗', cls: 'bad' }];
+            const DEFS_SETTER = [{ key: 'sb', label: 'Saque ✓', cls: 'good' }, { key: 'se', label: 'Saque ✗', cls: 'bad' }, { key: 'arm_b', label: 'Armado ✓', cls: 'good' }, { key: 'arm_e', label: 'Armado ✗', cls: 'bad' }, { key: 'pb', label: 'Recep. ✓', cls: 'good' }, { key: 'pe', label: 'Recep. ✗', cls: 'bad' }];
+            const DEFS_LIBERO = [{ key: 'sb', label: 'Saque ✓', cls: 'good' }, { key: 'se', label: 'Saque ✗', cls: 'bad' }, { key: 'arm_b', label: 'Armado ✓', cls: 'good' }, { key: 'arm_e', label: 'Armado ✗', cls: 'bad' }, { key: 'pb', label: 'Recep. ✓', cls: 'good' }, { key: 'pe', label: 'Recep. ✗', cls: 'bad' }, { key: 'def_b', label: 'Defensa ✓', cls: 'good' }, { key: 'def_e', label: 'Defensa ✗', cls: 'bad' }];
+            const ALL_KEYS = ['sb', 'se', 'ab', 'ae', 'pb', 'pe', 'arm_b', 'arm_e', 'def_b', 'def_e'];
+
+            function newMatch() { const stats = {}; convocados().forEach(p => stats[p.id] = blankStat()); return { id: uid(), date: dstamp(), opponent: '', sets: [], stats, finished: false }; }
+            function ensureMatch() { if (!state.currentMatch) { state.currentMatch = newMatch(); save(); } convocados().forEach(p => { if (!state.currentMatch.stats[p.id]) state.currentMatch.stats[p.id] = blankStat(); }); return state.currentMatch; }
+            function renderPartido() {
+                if (!convocados().length) { $('partidoBody').innerHTML = '<p class="empty">Cargá la convocatoria.</p>'; $('partidoHeader').style.display = 'none'; return; }
+                $('partidoHeader').style.display = ''; const m = ensureMatch(); $('mOpponent').value = m.opponent; $('mDate').value = m.date;
+                renderScoreboard(m); renderStatCards(m); renderTeamSummary(m);
+            }
+            function renderScoreboard(m) {
+                let su = 0, st = 0; m.sets.forEach(s => { if (s.us > s.them) su++; else if (s.them > s.us) st++; });
+                let html = `<div class="sets-won"><b>${escapeHtml(state.teamName)}</b> ${su} — ${st} <b>${escapeHtml(m.opponent || 'Rival')}</b></div><div class="sets-list">`;
+                m.sets.forEach((s, i) => { html += `<span class="set-pill">S${i + 1}: ${s.us}-${s.them}</span>`; });
+                $('scoreboard').innerHTML = html + '</div>';
+            }
+            function addSet() { showModal2Inputs('Puntos nuestros', 'Puntos rival', (a, b) => { const us = parseInt(a, 10), them = parseInt(b, 10); if (isNaN(us) || isNaN(them)) { toast('Valores inválidos'); return; } ensureMatch().sets.push({ us, them }); save(); renderScoreboard(state.currentMatch); }); }
+            function renderStatCards(m) {
+                const wrap = $('statCards'); wrap.innerHTML = '';
+                convocados().sort((a, b) => (a.number || 0) - (b.number || 0)).forEach(p => {
+                    const st = m.stats[p.id] || blankStat(), defs = getStatDefs(p);
+                    const card = document.createElement('div'); card.className = 'stat-card';
+                    let btns = '';
+                    defs.forEach(d => { btns += `<div class="stat-line"><span class="stat-label ${d.cls}">${d.label}</span><div class="stat-ctrl"><button type="button" class="sc minus" data-id="${p.id}" data-k="${d.key}" data-dir="-1">−</button><span class="stat-val" id="sv-${p.id}-${d.key}">${st[d.key] || 0}</span><button type="button" class="sc plus" data-id="${p.id}" data-k="${d.key}" data-dir="1">+</button></div></div>`; });
+                    card.innerHTML = `<div class="stat-head"><span class="dot" style="background:${p.color}"></span><b>#${p.number}</b> ${escapeHtml(p.name)}<span class="pos-mini">${p.position}</span></div>${btns}`;
+                    wrap.appendChild(card);
+                });
+                wrap.querySelectorAll('.sc').forEach(b => b.onclick = () => { const id = b.dataset.id, k = b.dataset.k, dir = parseInt(b.dataset.dir, 10); const st = state.currentMatch.stats[id]; st[k] = Math.max(0, (st[k] || 0) + dir); $(`sv-${id}-${k}`).textContent = st[k]; save(); renderTeamSummary(state.currentMatch); });
+            }
+            function aggField(stats, key) { return Object.values(stats).reduce((a, s) => a + (s[key] || 0), 0); }
+            function renderTeamSummary(m) {
+                const ab = aggField(m.stats, 'ab'), ae = aggField(m.stats, 'ae'), sb = aggField(m.stats, 'sb'), se = aggField(m.stats, 'se'), pb = aggField(m.stats, 'pb'), pe = aggField(m.stats, 'pe'), arm = aggField(m.stats, 'arm_b'), armE = aggField(m.stats, 'arm_e');
+                $('teamSummary').innerHTML = `<div class="sum-grid">${sumBox('Ataque', `${ab}/${ab + ae}`, pct(ab, ab + ae) + '% efectiv.', '#10b981')}${sumBox('Saque', `${sb} aces`, pct(se, sb + se) + '% error', '#f59e0b')}${sumBox('Recepción', `${pb}/${pb + pe}`, pct(pb, pb + pe) + '% positiva', '#22d3ee')}${sumBox('Armados', `${arm}/${arm + armE}`, pct(arm, arm + armE) + '% efectiv.', '#a855f7')}</div>`;
+            }
+            function sumBox(t, big, sub, color) { return `<div class="sum-box" style="border-top:3px solid ${color}"><div class="sum-title">${t}</div><div class="sum-big">${big}</div><div class="sum-sub">${sub}</div></div>`; }
+            function finishMatch() { const m = state.currentMatch; if (!m) return; showConfirm('¿Finalizar el partido?', () => { m.opponent = $('mOpponent').value.trim() || 'Rival'; m.date = $('mDate').value; m.finished = true; m.savedAt = Date.now(); state.history.unshift(m); state.currentMatch = null; save(); toast('Partido guardado'); go('historial'); }); }
+            function resetMatch() { showConfirm('¿Reiniciar estadísticas?', () => { state.currentMatch = newMatch(); save(); renderPartido(); }); }
+            function showModal2Inputs(l1, l2, cb) { $('input2Label1').textContent = l1; $('input2Label2').textContent = l2; $('input2A').value = ''; $('input2B').value = ''; $('input2Modal').classList.add('open'); $('input2Ok')._cb = cb; }
+            function bindInput2Modal() { $('input2Ok').onclick = () => { $('input2Modal').classList.remove('open'); if ($('input2Ok')._cb) $('input2Ok')._cb($('input2A').value, $('input2B').value); }; $('input2Cancel').onclick = () => $('input2Modal').classList.remove('open'); $('input2Modal').addEventListener('pointerdown', e => { if (e.target === $('input2Modal')) $('input2Modal').classList.remove('open'); }); $('input2B').addEventListener('keydown', e => { if (e.key === 'Enter') $('input2Ok').click(); }); }
+
+            function exportStatsPNG(match) {
+                const m = match || state.currentMatch; if (!m) { toast('No hay partido'); return; }
+                const players = Object.keys(m.stats).map(getPlayer).filter(Boolean).sort((a, b) => (a.number || 0) - (b.number || 0));
+                const W = 1020, rowH = 38, headH = 110, padX = 24, H = headH + 46 + players.length * rowH + 60;
+                const cv = document.createElement('canvas'), dpr = 2; cv.width = W * dpr; cv.height = H * dpr;
+                const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+                ctx.fillStyle = '#0e171f'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#e8794b'; ctx.fillRect(0, 0, W, 8);
+                ctx.fillStyle = '#e6edf3'; ctx.font = '800 28px Arial'; ctx.fillText(state.teamName + '  vs  ' + (m.opponent || 'Rival'), padX, 48);
+                ctx.font = '500 14px Arial'; ctx.fillStyle = '#9fb3c8'; let su = 0, st = 0; m.sets.forEach(s => s.us > s.them ? su++ : st++);
+                ctx.fillText(`${m.date}   ·   Sets ${su}-${st}   ` + m.sets.map((s, i) => `S${i + 1} ${s.us}-${s.them}`).join('  '), padX, 74);
+                const ab = aggField(m.stats, 'ab'), ae = aggField(m.stats, 'ae'), pb = aggField(m.stats, 'pb'), pe = aggField(m.stats, 'pe'), sb = aggField(m.stats, 'sb'), arm = aggField(m.stats, 'arm_b'), armE = aggField(m.stats, 'arm_e');
+                ctx.font = '700 13px Arial'; ctx.fillStyle = '#cbd5e1'; ctx.fillText(`Ataque ${pct(ab, ab + ae)}%  ·  Aces ${sb}  ·  Recep+ ${pct(pb, pb + pe)}%  ·  Armados ${pct(arm, arm + armE)}%`, padX, headH - 8);
+                let y = headH + 20; const colX = [padX, padX + 45, padX + 295, padX + 435, padX + 575, padX + 715, padX + 850, padX + 960];
+                ctx.fillStyle = '#1b2733'; ctx.fillRect(padX - 8, y - 22, W - 2 * (padX - 8), 30); ctx.fillStyle = '#7dd3fc'; ctx.font = '700 12px Arial';
+                ['#', 'Jugador', 'Saque ✓/✗', 'Ataque ✓/✗', 'Recep ✓/✗', 'Armado ✓/✗', 'Def ✓/✗', 'Efic.'].forEach((c, i) => ctx.fillText(c, colX[i], y)); y += 22;
+                players.forEach((p, idx) => { const s = m.stats[p.id]; if (idx % 2 === 0) { ctx.fillStyle = '#121c25'; ctx.fillRect(padX - 8, y - 22, W - 2 * (padX - 8), rowH); } ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(colX[0] + 5, y - 5, 5, 0, 7); ctx.fill(); ctx.fillStyle = '#e6edf3'; ctx.font = '700 13px Arial'; ctx.fillText('#' + p.number, colX[0] + 14, y); ctx.font = '500 13px Arial'; ctx.fillText(p.name, colX[1], y); ctx.fillStyle = '#9fb3c8'; ctx.fillText(`${s.sb}/${s.se}`, colX[2], y); const isSA = p.position === 'Armador' || p.position === 'Líbero'; ctx.fillText(isSA ? '—' : `${s.ab}/${s.ae}`, colX[3], y); ctx.fillText(`${s.pb}/${s.pe}`, colX[4], y); ctx.fillText((s.arm_b || 0) + (s.arm_e || 0) > 0 ? `${s.arm_b}/${s.arm_e}` : '—', colX[5], y); ctx.fillText(p.position === 'Líbero' && (s.def_b || 0) + (s.def_e || 0) > 0 ? `${s.def_b}/${s.def_e}` : '—', colX[6], y); const eff = isSA ? pct(s.arm_b || 0, (s.arm_b || 0) + (s.arm_e || 0)) : pct(s.ab, s.ab + s.ae); ctx.fillStyle = eff >= 50 ? '#10b981' : eff >= 30 ? '#f59e0b' : '#ef4444'; ctx.font = '700 13px Arial'; ctx.fillText(eff + '%', colX[7], y); y += rowH; });
+                cv.toBlob(b => downloadBlob(b, `stats_${(m.opponent || 'rival')}_${m.date}.png`));
+            }
+
+            /* ============================================================ HISTORIAL */
+            function renderHistorial() {
+                const wrap = $('historyList'); wrap.innerHTML = '';
+                if (!state.history.length) wrap.innerHTML = '<p class="empty">Todavía no hay partidos guardados.</p>';
+                state.history.forEach(m => { let su = 0, st = 0; m.sets.forEach(s => s.us > s.them ? su++ : st++); const card = document.createElement('div'); card.className = 'hist-card'; card.innerHTML = `<div class="hist-main"><div class="hist-vs">${escapeHtml(state.teamName)} <b>${su}-${st}</b> ${escapeHtml(m.opponent || 'Rival')}</div><div class="hist-date">${m.date}</div></div><div class="row-actions"><button type="button" class="mini" data-open="${m.id}">📊 Ver</button><button type="button" class="mini" data-png="${m.id}">🖼️ PNG</button><button type="button" class="mini danger" data-delh="${m.id}">🗑️</button></div>`; wrap.appendChild(card); });
+                wrap.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openMatch(b.dataset.open));
+                wrap.querySelectorAll('[data-png]').forEach(b => b.onclick = () => exportStatsPNG(state.history.find(x => x.id === b.dataset.png)));
+                wrap.querySelectorAll('[data-delh]').forEach(b => b.onclick = () => showConfirm('¿Borrar este partido?', () => { state.history = state.history.filter(x => x.id !== b.dataset.delh); save(); renderHistorial(); }));
+                renderAccumulated();
+            }
+            function openMatch(id) { const m = state.history.find(x => x.id === id); if (!m) return; const box = $('histDetail'); const players = Object.keys(m.stats).map(getPlayer).filter(Boolean).sort((a, b) => (a.number || 0) - (b.number || 0)); const rows = players.map(p => { const s = m.stats[p.id], isSA = p.position === 'Armador' || p.position === 'Líbero'; return `<tr><td><span class="dot" style="background:${p.color}"></span>#${p.number} ${escapeHtml(p.name)}</td><td>${s.sb}/${s.se}</td><td>${isSA ? '—' : `${s.ab}/${s.ae}`}</td><td>${s.pb}/${s.pe}</td><td>${(s.arm_b || 0) > 0 ? `${s.arm_b}/${s.arm_e}` : '—'}</td><td>${pct(isSA ? s.arm_b || 0 : s.ab, (isSA ? (s.arm_b || 0) + (s.arm_e || 0) : s.ab + s.ae))}%</td></tr>`; }).join(''); box.innerHTML = `<h3>${escapeHtml(m.opponent || 'Rival')} · ${m.date}</h3><table class="stat-table"><thead><tr><th>Jugador</th><th>Saque ✓/✗</th><th>Ataque ✓/✗</th><th>Recep ✓/✗</th><th>Armado ✓/✗</th><th>Efic.</th></tr></thead><tbody>${rows}</tbody></table>`; box.style.display = 'block'; box.scrollIntoView({ behavior: 'smooth' }); }
+            function renderAccumulated() { const box = $('accumBody'), totals = {}; const matches = state.history.concat(state.currentMatch ? [state.currentMatch] : []); matches.forEach(m => Object.keys(m.stats).forEach(id => { if (!totals[id]) totals[id] = blankStat(); ALL_KEYS.forEach(k => totals[id][k] = (totals[id][k] || 0) + (m.stats[id][k] || 0)); })); const ids = Object.keys(totals).filter(id => getPlayer(id)); if (!ids.length) { box.innerHTML = '<p class="empty">Sin datos todavía.</p>'; return; } const rows = ids.map(getPlayer).filter(Boolean).sort((a, b) => (a.number || 0) - (b.number || 0)).map(p => { const s = totals[p.id], isSA = p.position === 'Armador' || p.position === 'Líbero'; return `<tr><td><span class="dot" style="background:${p.color}"></span>#${p.number} ${escapeHtml(p.name)}</td><td>${s.sb}/${s.se}</td><td>${isSA ? '—' : `${s.ab}/${s.ae}`}</td><td>${s.pb}/${s.pe}</td><td>${(s.arm_b || 0) > 0 ? `${s.arm_b}/${s.arm_e}` : '—'}</td><td>${pct(isSA ? s.arm_b || 0 : s.ab, (isSA ? (s.arm_b || 0) + (s.arm_e || 0) : s.ab + s.ae))}%</td></tr>`; }).join(''); box.innerHTML = `<table class="stat-table"><thead><tr><th>Jugador</th><th>Saque ✓/✗</th><th>Ataque ✓/✗</th><th>Recep ✓/✗</th><th>Armado ✓/✗</th><th>Efic.</th></tr></thead><tbody>${rows}</tbody></table>`; }
+
+            /* ============================================================ SEED + BIND */
+            function seedIfEmpty() {
+                if (state.players.length > 0) return;
+                const demo = [['Lucía', 5, 'Armador'], ['Mora', 12, 'Opuesto'], ['Caro', 7, 'Central'], ['Juli', 9, 'Central'], ['Sofi', 3, 'Punta-Receptor'], ['Vale', 11, 'Punta-Receptor'], ['Pau', 1, 'Líbero'], ['Mili', 8, 'Punta-Receptor']];
+                demo.forEach(([n, num, pos]) => state.players.push({ id: uid(), name: n, number: num, position: pos, color: POS_COLOR[pos] }));
+                state.convocatoria = state.players.slice(0, 7).map(p => p.id);
+                state.pizarra.setterId = state.players[0].id; state.pizarra.oppId = state.players[1].id; state.pizarra.liberoId = state.players[6].id;
+                save();
+            }
+
+            function bind() {
+                bindConfirmModal(); bindInput2Modal();
+                VIEWS.forEach(v => { const t = $('tab-' + v); if (t) t.onclick = () => go(v); });
+                $('teamNameInput').addEventListener('change', e => { state.teamName = e.target.value.trim() || 'Mi Equipo'; save(); });
+                $('npPos').innerHTML = POSITIONS.map(p => `<option>${p}</option>`).join('');
+                $('npAddBtn').onclick = addPlayerFromForm;
+                $('npName').addEventListener('keydown', e => { if (e.key === 'Enter') $('npNumber').focus(); });
+                $('npNumber').addEventListener('keydown', e => { if (e.key === 'Enter') addPlayerFromForm(); });
+                const MAP = { pzSetter: 'setterId', pzSetter2: 'setter2Id', pzOpp: 'oppId', pzLibero: 'liberoId' };
+                $('pzSystem').onchange = e => { state.pizarra.system = e.target.value; save(); renderPizarra(); };
+                ['pzSetter', 'pzSetter2', 'pzOpp', 'pzLibero'].forEach(selId => { $(selId).onchange = e => { state.pizarra[MAP[selId]] = e.target.value || null; save(); fillRoleSelects(); if (selId === 'pzLibero') drawTokens(); }; });
+                $('libToggle').onchange = e => { state.pizarra.useLibero = e.target.checked; save(); };
+                $('rivalToggle').onchange = e => { state.pizarra.showRival = e.target.checked; save(); drawCourt(); drawTokens(); drawDrawings(); };
+                $('addConvBtn').onclick = addConvToBoard;
+                $('lineupBtn').onclick = () => applyLineup(true);
+                $('rotateBtn').onclick = () => rotate(1);
+                $('rotateBkBtn').onclick = () => rotate(-1);
+                $('clearBoardBtn').onclick = clearBoard;
+                $('exportPngBtn').onclick = exportBoardPNG;
+                $('applySubBtn').onclick = applySub;
+                $('modeMover').onclick = () => setMode('mover');
+                $('modeDibujar').onclick = () => setMode('dibujar');
+                document.querySelectorAll('[data-tool]').forEach(b => b.onclick = () => { drawTool = b.dataset.tool; document.querySelectorAll('[data-tool]').forEach(x => x.classList.toggle('on', x === b)); });
+                document.querySelectorAll('[data-color]').forEach(b => b.onclick = () => { drawColor = b.dataset.color; document.querySelectorAll('[data-color]').forEach(x => x.classList.toggle('on', x === b)); });
+                $('clearDrawBtn').onclick = clearDrawings;
+                document.querySelectorAll('.play-btn').forEach(b => b.onclick = () => selectPlay(b.dataset.play));
+                $('defBtn').onclick = toggleDefense;
+                $('playPauseBtn').onclick = togglePlayPause;
+                $('playRestartBtn').onclick = restartPlay;
+                $('playCloseBtn').onclick = closePlay;
+                setupDrawLayer();
+                $('mOpponent').addEventListener('change', e => { ensureMatch().opponent = e.target.value; save(); renderScoreboard(state.currentMatch); });
+                $('mDate').addEventListener('change', e => { ensureMatch().date = e.target.value; save(); });
+                $('addSetBtn').onclick = addSet;
+                $('finishMatchBtn').onclick = finishMatch;
+                $('resetMatchBtn').onclick = resetMatch;
+                $('exportStatsBtn').onclick = () => exportStatsPNG();
+                $('printStatsBtn').onclick = () => window.print();
+                if (memoryFallback) $('fallbackNote').style.display = 'block';
+            }
+
+            window.addEventListener('DOMContentLoaded', () => { bind(); seedIfEmpty(); go('plantel'); });
+        })();
+
+    </script>
+</body>
+
+</html>
