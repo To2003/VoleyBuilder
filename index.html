@@ -1115,6 +1115,11 @@
                 <h2>Equipo</h2>
                 <label class="fld">Nombre del equipo</label>
                 <input id="teamNameInput" type="text" placeholder="Mi Equipo">
+                <div class="btn-row" style="margin-top:12px">
+                    <button type="button" id="exportDataBtn" class="btn accent2 sm">⬇️ Exportar planilla</button>
+                    <button type="button" id="importDataBtn" class="btn sm">⬆️ Importar planilla</button>
+                    <input type="file" id="importFileInput" accept=".json" style="display:none">
+                </div>
             </div>
             <div class="card">
                 <h2>Agregar jugador</h2>
@@ -1381,7 +1386,7 @@
             const STORE_KEY = 'voley_app_v4';
             let memoryFallback = false;
             const defaultState = () => ({
-                teamName: 'Mi Equipo', players: [], convocatoria: [],
+                teamName: '', players: [], convocatoria: [],
                 pizarra: { system: '5-1', rotation: 1, setterId: null, setter2Id: null, oppId: null, liberoId: null, mb1Id: null, mb2Id: null, oh1Id: null, oh2Id: null, useLibero: false, showRival: false, positions: {}, drawings: [], subs: [] },
                 currentMatch: null, history: []
             });
@@ -2234,20 +2239,40 @@
             function openMatch(id) { const m = state.history.find(x => x.id === id); if (!m) return; const box = $('histDetail'); const players = Object.keys(m.stats).map(getPlayer).filter(Boolean).sort((a, b) => (a.number || 0) - (b.number || 0)); const rows = players.map(p => { const s = m.stats[p.id], isSA = p.position === 'Armador' || p.position === 'Líbero'; return `<tr><td><span class="dot" style="background:${p.color}"></span>#${p.number} ${escapeHtml(p.name)}</td><td>${s.sb}/${s.se}</td><td>${isSA ? '—' : `${s.ab}/${s.ae}`}</td><td>${s.pb}/${s.pe}</td><td>${(s.arm_b || 0) > 0 ? `${s.arm_b}/${s.arm_e}` : '—'}</td><td>${pct(isSA ? s.arm_b || 0 : s.ab, (isSA ? (s.arm_b || 0) + (s.arm_e || 0) : s.ab + s.ae))}%</td></tr>`; }).join(''); box.innerHTML = `<h3>${escapeHtml(m.opponent || 'Rival')} · ${m.date}</h3><table class="stat-table"><thead><tr><th>Jugador</th><th>Saque ✓/✗</th><th>Ataque ✓/✗</th><th>Recep ✓/✗</th><th>Armado ✓/✗</th><th>Efic.</th></tr></thead><tbody>${rows}</tbody></table>`; box.style.display = 'block'; box.scrollIntoView({ behavior: 'smooth' }); }
             function renderAccumulated() { const box = $('accumBody'), totals = {}; const matches = state.history.concat(state.currentMatch ? [state.currentMatch] : []); matches.forEach(m => Object.keys(m.stats).forEach(id => { if (!totals[id]) totals[id] = blankStat(); ALL_KEYS.forEach(k => totals[id][k] = (totals[id][k] || 0) + (m.stats[id][k] || 0)); })); const ids = Object.keys(totals).filter(id => getPlayer(id)); if (!ids.length) { box.innerHTML = '<p class="empty">Sin datos todavía.</p>'; return; } const rows = ids.map(getPlayer).filter(Boolean).sort((a, b) => (a.number || 0) - (b.number || 0)).map(p => { const s = totals[p.id], isSA = p.position === 'Armador' || p.position === 'Líbero'; return `<tr><td><span class="dot" style="background:${p.color}"></span>#${p.number} ${escapeHtml(p.name)}</td><td>${s.sb}/${s.se}</td><td>${isSA ? '—' : `${s.ab}/${s.ae}`}</td><td>${s.pb}/${s.pe}</td><td>${(s.arm_b || 0) > 0 ? `${s.arm_b}/${s.arm_e}` : '—'}</td><td>${pct(isSA ? s.arm_b || 0 : s.ab, (isSA ? (s.arm_b || 0) + (s.arm_e || 0) : s.ab + s.ae))}%</td></tr>`; }).join(''); box.innerHTML = `<table class="stat-table"><thead><tr><th>Jugador</th><th>Saque ✓/✗</th><th>Ataque ✓/✗</th><th>Recep ✓/✗</th><th>Armado ✓/✗</th><th>Efic.</th></tr></thead><tbody>${rows}</tbody></table>`; }
 
-            /* ============================================================ SEED + BIND */
-            function seedIfEmpty() {
-                if (state.players.length > 0) return;
-                const demo = [['Lucía', 5, 'Armador'], ['Mora', 12, 'Opuesto'], ['Caro', 7, 'Central'], ['Juli', 9, 'Central'], ['Sofi', 3, 'Punta-Receptor'], ['Vale', 11, 'Punta-Receptor'], ['Pau', 1, 'Líbero'], ['Mili', 8, 'Punta-Receptor']];
-                demo.forEach(([n, num, pos]) => state.players.push({ id: uid(), name: n, number: num, position: pos, color: POS_COLOR[pos] }));
-                state.convocatoria = state.players.slice(0, 7).map(p => p.id);
-                state.pizarra.setterId = state.players[0].id; state.pizarra.oppId = state.players[1].id; state.pizarra.liberoId = state.players[6].id;
-                save();
+            /* ============================================================ IMPORT / EXPORT */
+            function exportPlanilla() {
+                const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+                downloadBlob(blob, `pizarra_voley_${dstamp()}.json`);
             }
+
+            function importPlanilla() { $('importFileInput').click(); }
+
+            function handleImportFile(e) {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    try {
+                        const parsed = JSON.parse(ev.target.result);
+                        if (!parsed.players || !Array.isArray(parsed.players)) { toast('Archivo inválido'); return; }
+                        const d = defaultState();
+                        parsed.pizarra = Object.assign(d.pizarra, parsed.pizarra || {});
+                        state = Object.assign(d, parsed);
+                        save(); renderPlantel(); toast('Planilla importada');
+                    } catch { toast('Error al leer el archivo'); }
+                };
+                reader.readAsText(file);
+                e.target.value = '';
+            }
+
+            /* ============================================================ BIND */
 
             function bind() {
                 bindConfirmModal(); bindInput2Modal();
                 VIEWS.forEach(v => { const t = $('tab-' + v); if (t) t.onclick = () => go(v); });
-                $('teamNameInput').addEventListener('change', e => { state.teamName = e.target.value.trim() || 'Mi Equipo'; save(); });
+                $('teamNameInput').addEventListener('change', e => { state.teamName = e.target.value.trim(); save(); });
+                $('exportDataBtn').onclick = exportPlanilla;
+                $('importDataBtn').onclick = importPlanilla;
+                $('importFileInput').onchange = handleImportFile;
                 $('npPos').innerHTML = POSITIONS.map(p => `<option>${p}</option>`).join('');
                 $('npAddBtn').onclick = addPlayerFromForm;
                 $('npName').addEventListener('keydown', e => { if (e.key === 'Enter') $('npNumber').focus(); });
@@ -2285,7 +2310,7 @@
                 if (memoryFallback) $('fallbackNote').style.display = 'block';
             }
 
-            window.addEventListener('DOMContentLoaded', () => { bind(); seedIfEmpty(); go('plantel'); });
+            window.addEventListener('DOMContentLoaded', () => { bind(); go('plantel'); });
         })();
 
     </script>
