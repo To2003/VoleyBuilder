@@ -1062,6 +1062,106 @@
                 color: #000
             }
         }
+
+        /* ─── STATS 3-NIVELES ────────────────────────────────────────── */
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 12px
+        }
+
+        .fund-row {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .fund-row:last-child { border-bottom: none }
+
+        .fund-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px
+        }
+
+        .fund-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .7px
+        }
+
+        .fund-kpis { display: flex; gap: 5px }
+
+        .kpi {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 20px
+        }
+
+        .kpi-efic { background: rgba(16,185,129,.15); color: var(--good) }
+        .kpi-efn  { background: rgba(34,211,238,.12); color: var(--accent2) }
+
+        .fund-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px
+        }
+
+        .fv-grp { display: flex; flex-direction: column; align-items: stretch; gap: 3px }
+
+        .fv-main {
+            min-height: 56px;
+            border-radius: 11px;
+            font-weight: 800;
+            border-width: 1.5px;
+            border-style: solid;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            padding: 6px 4px;
+            font-family: var(--body);
+            transition: .1s
+        }
+
+        .fv-main:active { transform: scale(.91) }
+
+        .fv-count {
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1
+        }
+
+        .fv-sublbl {
+            font-size: 9px;
+            opacity: .85;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .3px
+        }
+
+        .fv-pos { background: rgba(16,185,129,.18); color: var(--good); border-color: #1c5e49 }
+        .fv-neu { background: rgba(245,158,11,.14); color: var(--warn); border-color: #6b4500 }
+        .fv-neg { background: rgba(239,68,68,.14); color: #ff9d9d; border-color: #5a2a2a }
+
+        .fv-undo {
+            background: transparent;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            color: var(--muted);
+            font-size: 13px;
+            padding: 3px 0;
+            cursor: pointer;
+            width: 100%;
+            font-family: var(--body)
+        }
+
+        .fv-undo:active { background: rgba(255,255,255,.06) }
     </style>
 </head>
 
@@ -1393,8 +1493,27 @@
             let state = loadState();
 
             function loadState() {
-                try { const raw = localStorage.getItem(STORE_KEY); if (raw) { const p = JSON.parse(raw); const d = defaultState(); p.pizarra = Object.assign(d.pizarra, p.pizarra || {}); return Object.assign(d, p); } }
-                catch (e) { memoryFallback = true; }
+                try {
+                    const raw = localStorage.getItem(STORE_KEY);
+                    if (raw) {
+                        const p = JSON.parse(raw);
+                        const d = defaultState();
+                        p.pizarra = Object.assign(d.pizarra, p.pizarra || {});
+                        const loaded = Object.assign(d, p);
+                        // Migrar stats al formato v2
+                        if (loaded.currentMatch?.stats) {
+                            Object.keys(loaded.currentMatch.stats).forEach(id => {
+                                loaded.currentMatch.stats[id] = migrateStats(loaded.currentMatch.stats[id]);
+                            });
+                        }
+                        if (loaded.history) {
+                            loaded.history.forEach(m => {
+                                if (m.stats) Object.keys(m.stats).forEach(id => { m.stats[id] = migrateStats(m.stats[id]); });
+                            });
+                        }
+                        return loaded;
+                    }
+                } catch (e) { memoryFallback = true; }
                 return defaultState();
             }
             function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { memoryFallback = true; } }
@@ -2157,21 +2276,58 @@
                 img.onerror = () => toast('No se pudo exportar'); img.src = url;
             }
 
-            /* ============================================================ ESTADÍSTICAS */
-            function blankStat() { return { sb: 0, se: 0, ab: 0, ae: 0, pb: 0, pe: 0, arm_b: 0, arm_e: 0, def_b: 0, def_e: 0 }; }
-            function getStatDefs(p) {
-                if (!p) return DEFS_DEFAULT;
-                if (p.position === 'Armador') return DEFS_SETTER;
-                if (p.position === 'Líbero') return DEFS_LIBERO;
-                return DEFS_DEFAULT;
+            /* ============================================================ ESTADÍSTICAS v2 · 3 niveles */
+            const FUND = {
+                saque:     { label: 'Saque',     pos: 's_pos',   neu: 's_neu',   neg: 's_neg',   posLbl: 'Ace',      neuLbl: 'Sigue',    negLbl: 'Error'  },
+                ataque:    { label: 'Ataque',    pos: 'a_pos',   neu: 'a_neu',   neg: 'a_neg',   posLbl: 'Punto',    neuLbl: 'Defend.',  negLbl: 'Error'  },
+                recepcion: { label: 'Recepción', pos: 'p_pos',   neu: 'p_neu',   neg: 'p_neg',   posLbl: 'Perfecta', neuLbl: 'Positiva', negLbl: 'Error'  },
+                armado:    { label: 'Armado',    pos: 'arm_pos', neu: 'arm_neu', neg: 'arm_neg', posLbl: '0-1 Blq',  neuLbl: '2+ Blq',   negLbl: 'Error'  },
+                bloqueo:   { label: 'Bloqueo',   pos: 'bl_pos',  neu: 'bl_neu',  neg: 'bl_neg',  posLbl: 'Punto',    neuLbl: 'Toque',    negLbl: 'Error'  },
+                defensa:   { label: 'Defensa',   pos: 'def_pos', neu: 'def_neu', neg: 'def_neg', posLbl: 'Perfecta', neuLbl: 'Sigue',    negLbl: 'Error'  },
+            };
+            const FUND_DEFAULT = ['saque', 'ataque', 'recepcion', 'bloqueo', 'defensa'];
+            const FUND_SETTER  = ['saque', 'armado', 'recepcion', 'bloqueo', 'defensa'];
+            const FUND_LIBERO  = ['saque', 'recepcion', 'armado', 'defensa'];
+            const ALL_KEYS = Object.values(FUND).flatMap(f => [f.pos, f.neu, f.neg]);
+
+            function blankStat() {
+                return { s_pos:0,s_neu:0,s_neg:0, a_pos:0,a_neu:0,a_neg:0, p_pos:0,p_neu:0,p_neg:0, arm_pos:0,arm_neu:0,arm_neg:0, bl_pos:0,bl_neu:0,bl_neg:0, def_pos:0,def_neu:0,def_neg:0 };
             }
-            const DEFS_DEFAULT = [{ key: 'sb', label: 'Saque ✓', cls: 'good' }, { key: 'se', label: 'Saque ✗', cls: 'bad' }, { key: 'ab', label: 'Ataque ✓', cls: 'good' }, { key: 'ae', label: 'Ataque ✗', cls: 'bad' }, { key: 'pb', label: 'Recep. ✓', cls: 'good' }, { key: 'pe', label: 'Recep. ✗', cls: 'bad' }];
-            const DEFS_SETTER = [{ key: 'sb', label: 'Saque ✓', cls: 'good' }, { key: 'se', label: 'Saque ✗', cls: 'bad' }, { key: 'arm_b', label: 'Armado ✓', cls: 'good' }, { key: 'arm_e', label: 'Armado ✗', cls: 'bad' }, { key: 'pb', label: 'Recep. ✓', cls: 'good' }, { key: 'pe', label: 'Recep. ✗', cls: 'bad' }];
-            const DEFS_LIBERO = [{ key: 'sb', label: 'Saque ✓', cls: 'good' }, { key: 'se', label: 'Saque ✗', cls: 'bad' }, { key: 'arm_b', label: 'Armado ✓', cls: 'good' }, { key: 'arm_e', label: 'Armado ✗', cls: 'bad' }, { key: 'pb', label: 'Recep. ✓', cls: 'good' }, { key: 'pe', label: 'Recep. ✗', cls: 'bad' }, { key: 'def_b', label: 'Defensa ✓', cls: 'good' }, { key: 'def_e', label: 'Defensa ✗', cls: 'bad' }];
-            const ALL_KEYS = ['sb', 'se', 'ab', 'ae', 'pb', 'pe', 'arm_b', 'arm_e', 'def_b', 'def_e'];
+
+            function migrateStats(old) {
+                if (!old) return blankStat();
+                if ('s_pos' in old) return old;
+                return { s_pos:old.sb||0,s_neu:0,s_neg:old.se||0, a_pos:old.ab||0,a_neu:0,a_neg:old.ae||0, p_pos:old.pb||0,p_neu:0,p_neg:old.pe||0, arm_pos:old.arm_b||0,arm_neu:0,arm_neg:old.arm_e||0, bl_pos:0,bl_neu:0,bl_neg:0, def_pos:old.def_b||0,def_neu:0,def_neg:old.def_e||0 };
+            }
+
+            function getStatDefs(p) {
+                if (!p) return FUND_DEFAULT;
+                if (p.position === 'Armador') return FUND_SETTER;
+                if (p.position === 'Líbero') return FUND_LIBERO;
+                return FUND_DEFAULT;
+            }
+
+            function eficacia(pos, neu, neg)   { const t = pos+neu+neg; return t>0 ? Math.round((pos/t)*100) : 0; }
+            function eficiencia(pos, neu, neg)  { const t = pos+neu+neg; return t>0 ? Math.round(((pos-neg)/t)*100) : 0; }
+            function eficaciaColor(v)           { return v>=60 ? 'var(--good)' : v>=35 ? 'var(--warn)' : 'var(--bad)'; }
+            function eficienciaColor(v)         { return v>=25 ? 'var(--good)' : v>=0  ? 'var(--warn)' : 'var(--bad)'; }
+
+            function globalEficPlayer(st, defs) {
+                let pos=0, tot=0;
+                defs.forEach(fk => { const f=FUND[fk]; pos+=(st[f.pos]||0); tot+=(st[f.pos]||0)+(st[f.neu]||0)+(st[f.neg]||0); });
+                return { efic: eficacia(pos, 0, tot-pos), total: tot };
+            }
 
             function newMatch() { const stats = {}; convocados().forEach(p => stats[p.id] = blankStat()); return { id: uid(), date: dstamp(), opponent: '', sets: [], stats, finished: false }; }
-            function ensureMatch() { if (!state.currentMatch) { state.currentMatch = newMatch(); save(); } convocados().forEach(p => { if (!state.currentMatch.stats[p.id]) state.currentMatch.stats[p.id] = blankStat(); }); return state.currentMatch; }
+            function ensureMatch() {
+                if (!state.currentMatch) { state.currentMatch = newMatch(); save(); }
+                convocados().forEach(p => {
+                    state.currentMatch.stats[p.id] = state.currentMatch.stats[p.id]
+                        ? migrateStats(state.currentMatch.stats[p.id])
+                        : blankStat();
+                });
+                return state.currentMatch;
+            }
             function renderPartido() {
                 if (!convocados().length) { $('partidoBody').innerHTML = '<p class="empty">Cargá la convocatoria.</p>'; $('partidoHeader').style.display = 'none'; return; }
                 $('partidoHeader').style.display = ''; const m = ensureMatch(); $('mOpponent').value = m.opponent; $('mDate').value = m.date;
@@ -2186,20 +2342,90 @@
             function addSet() { showModal2Inputs('Puntos nuestros', 'Puntos rival', (a, b) => { const us = parseInt(a, 10), them = parseInt(b, 10); if (isNaN(us) || isNaN(them)) { toast('Valores inválidos'); return; } ensureMatch().sets.push({ us, them }); save(); renderScoreboard(state.currentMatch); }); }
             function renderStatCards(m) {
                 const wrap = $('statCards'); wrap.innerHTML = '';
-                convocados().sort((a, b) => (a.number || 0) - (b.number || 0)).forEach(p => {
-                    const st = m.stats[p.id] || blankStat(), defs = getStatDefs(p);
+                convocados().sort((a, b) => (a.number||0) - (b.number||0)).forEach(p => {
+                    const st = migrateStats(m.stats[p.id] || blankStat());
+                    const defs = getStatDefs(p);
+                    const { efic: ge } = globalEficPlayer(st, defs);
                     const card = document.createElement('div'); card.className = 'stat-card';
-                    let btns = '';
-                    defs.forEach(d => { btns += `<div class="stat-line"><span class="stat-label ${d.cls}">${d.label}</span><div class="stat-ctrl"><button type="button" class="sc minus" data-id="${p.id}" data-k="${d.key}" data-dir="-1">−</button><span class="stat-val" id="sv-${p.id}-${d.key}">${st[d.key] || 0}</span><button type="button" class="sc plus" data-id="${p.id}" data-k="${d.key}" data-dir="1">+</button></div></div>`; });
-                    card.innerHTML = `<div class="stat-head"><span class="dot" style="background:${p.color}"></span><b>#${p.number}</b> ${escapeHtml(p.name)}<span class="pos-mini">${p.position}</span></div>${btns}`;
+
+                    let funds = '';
+                    defs.forEach(fKey => {
+                        const f = FUND[fKey];
+                        const pos = st[f.pos]||0, neu = st[f.neu]||0, neg = st[f.neg]||0;
+                        const efic = eficacia(pos,neu,neg), efn = eficiencia(pos,neu,neg);
+                        const efnSign = efn >= 0 ? '+' : '';
+                        funds += `<div class="fund-row">
+                        <div class="fund-header">
+                            <span class="fund-name">${f.label}</span>
+                            <div class="fund-kpis">
+                                <span class="kpi kpi-efic" id="efic-${p.id}-${fKey}" style="color:${eficaciaColor(efic)}">Efic ${efic}%</span>
+                                <span class="kpi kpi-efn"  id="efn-${p.id}-${fKey}"  style="color:${eficienciaColor(efn)}">Efn ${efnSign}${efn}%</span>
+                            </div>
+                        </div>
+                        <div class="fund-btns">
+                            ${['pos','neu','neg'].map((lvl,li) => {
+                                const key = f[lvl], val = st[key]||0, lbl = f[lvl+'Lbl'];
+                                const cls = ['fv-pos','fv-neu','fv-neg'][li];
+                                const sym = ['●','◉','✕'][li];
+                                return `<div class="fv-grp">
+                                    <button type="button" class="fv-main ${cls}" data-id="${p.id}" data-k="${key}" data-fund="${fKey}" data-dir="1">
+                                        <span class="fv-count" id="fv-${p.id}-${key}">${val}</span>
+                                        <span class="fv-sublbl">${sym} ${lbl}</span>
+                                    </button>
+                                    <button type="button" class="fv-undo" data-id="${p.id}" data-k="${key}" data-fund="${fKey}" data-dir="-1">− deshacer</button>
+                                </div>`;
+                            }).join('')}
+                        </div></div>`;
+                    });
+
+                    card.innerHTML = `<div class="stat-head">
+                        <span class="dot" style="background:${p.color}"></span>
+                        <b>#${p.number}</b> ${escapeHtml(p.name)}
+                        <span class="pos-mini">${p.position}</span>
+                        <span class="pos-mini" style="margin-left:auto;color:${eficaciaColor(ge)};font-weight:700">Efic ${ge}%</span>
+                    </div>${funds}`;
                     wrap.appendChild(card);
                 });
-                wrap.querySelectorAll('.sc').forEach(b => b.onclick = () => { const id = b.dataset.id, k = b.dataset.k, dir = parseInt(b.dataset.dir, 10); const st = state.currentMatch.stats[id]; st[k] = Math.max(0, (st[k] || 0) + dir); $(`sv-${id}-${k}`).textContent = st[k]; save(); renderTeamSummary(state.currentMatch); });
+
+                wrap.querySelectorAll('[data-k]').forEach(btn => {
+                    btn.onclick = () => {
+                        const id = btn.dataset.id, k = btn.dataset.k, dir = parseInt(btn.dataset.dir,10), fKey = btn.dataset.fund;
+                        const st2 = state.currentMatch.stats[id];
+                        st2[k] = Math.max(0, (st2[k]||0) + dir);
+                        const countEl = $(`fv-${id}-${k}`);
+                        if (countEl) countEl.textContent = st2[k];
+                        // Recalcular KPIs de ese fundamento
+                        const f = FUND[fKey];
+                        const pos = st2[f.pos]||0, neu = st2[f.neu]||0, neg = st2[f.neg]||0;
+                        const efic = eficacia(pos,neu,neg), efn = eficiencia(pos,neu,neg);
+                        const efnSign = efn>=0?'+':'';
+                        const eficEl = $(`efic-${id}-${fKey}`), efnEl = $(`efn-${id}-${fKey}`);
+                        if (eficEl) { eficEl.textContent=`Efic ${efic}%`; eficEl.style.color=eficaciaColor(efic); }
+                        if (efnEl)  { efnEl.textContent=`Efn ${efnSign}${efn}%`; efnEl.style.color=eficienciaColor(efn); }
+                        // Efic global del jugador en el header
+                        const defs = getStatDefs(getPlayer(id));
+                        const { efic: ge } = globalEficPlayer(st2, defs);
+                        const geEl = btn.closest('.stat-card')?.querySelector('.pos-mini:last-child');
+                        if (geEl) { geEl.textContent=`Efic ${ge}%`; geEl.style.color=eficaciaColor(ge); }
+                        save();
+                        renderTeamSummary(state.currentMatch);
+                    };
+                });
             }
-            function aggField(stats, key) { return Object.values(stats).reduce((a, s) => a + (s[key] || 0), 0); }
+            function aggField(stats, key) { return Object.values(stats).reduce((a, s) => a + (s[key]||0), 0); }
             function renderTeamSummary(m) {
-                const ab = aggField(m.stats, 'ab'), ae = aggField(m.stats, 'ae'), sb = aggField(m.stats, 'sb'), se = aggField(m.stats, 'se'), pb = aggField(m.stats, 'pb'), pe = aggField(m.stats, 'pe'), arm = aggField(m.stats, 'arm_b'), armE = aggField(m.stats, 'arm_e');
-                $('teamSummary').innerHTML = `<div class="sum-grid">${sumBox('Ataque', `${ab}/${ab + ae}`, pct(ab, ab + ae) + '% efectiv.', '#10b981')}${sumBox('Saque', `${sb} aces`, pct(se, sb + se) + '% error', '#f59e0b')}${sumBox('Recepción', `${pb}/${pb + pe}`, pct(pb, pb + pe) + '% positiva', '#22d3ee')}${sumBox('Armados', `${arm}/${arm + armE}`, pct(arm, arm + armE) + '% efectiv.', '#a855f7')}</div>`;
+                const SHOW = ['saque','ataque','recepcion','bloqueo'];
+                const COLOR = { saque:'#f59e0b', ataque:'#10b981', recepcion:'#22d3ee', bloqueo:'#3b82f6' };
+                let html = '<div class="sum-grid">';
+                SHOW.forEach(fk => {
+                    const f = FUND[fk];
+                    const pos = aggField(m.stats,f.pos), neu = aggField(m.stats,f.neu), neg = aggField(m.stats,f.neg);
+                    const tot = pos+neu+neg, efic = eficacia(pos,neu,neg), efn = eficiencia(pos,neu,neg);
+                    const efnSign = efn>=0?'+':'';
+                    html += sumBox(f.label, `${pos}/${tot}`, `Efic ${efic}% · Efn ${efnSign}${efn}%`, COLOR[fk]);
+                });
+                html += '</div>';
+                $('teamSummary').innerHTML = html;
             }
             function sumBox(t, big, sub, color) { return `<div class="sum-box" style="border-top:3px solid ${color}"><div class="sum-title">${t}</div><div class="sum-big">${big}</div><div class="sum-sub">${sub}</div></div>`; }
             function finishMatch() { const m = state.currentMatch; if (!m) return; showConfirm('¿Finalizar el partido?', () => { m.opponent = $('mOpponent').value.trim() || 'Rival'; m.date = $('mDate').value; m.finished = true; m.savedAt = Date.now(); state.history.unshift(m); state.currentMatch = null; save(); toast('Partido guardado'); go('historial'); }); }
@@ -2209,21 +2435,54 @@
 
             function exportStatsPNG(match) {
                 const m = match || state.currentMatch; if (!m) { toast('No hay partido'); return; }
-                const players = Object.keys(m.stats).map(getPlayer).filter(Boolean).sort((a, b) => (a.number || 0) - (b.number || 0));
-                const W = 1020, rowH = 38, headH = 110, padX = 24, H = headH + 46 + players.length * rowH + 60;
+                const players = Object.keys(m.stats).map(getPlayer).filter(Boolean).sort((a,b) => (a.number||0)-(b.number||0));
+                // Columnas: Jugador, Saque(Efic/Efn), Ataque, Recep, Armado, Bloqueo, Defensa, Efic.Global
+                const COLS = ['saque','ataque','recepcion','armado','bloqueo','defensa'];
+                const W = 1120, rowH = 44, headH = 118, padX = 22, H = headH + 46 + players.length * rowH + 60;
                 const cv = document.createElement('canvas'), dpr = 2; cv.width = W * dpr; cv.height = H * dpr;
                 const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
-                ctx.fillStyle = '#0e171f'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#e8794b'; ctx.fillRect(0, 0, W, 8);
-                ctx.fillStyle = '#e6edf3'; ctx.font = '800 28px Arial'; ctx.fillText(state.teamName + '  vs  ' + (m.opponent || 'Rival'), padX, 48);
-                ctx.font = '500 14px Arial'; ctx.fillStyle = '#9fb3c8'; let su = 0, st = 0; m.sets.forEach(s => s.us > s.them ? su++ : st++);
-                ctx.fillText(`${m.date}   ·   Sets ${su}-${st}   ` + m.sets.map((s, i) => `S${i + 1} ${s.us}-${s.them}`).join('  '), padX, 74);
-                const ab = aggField(m.stats, 'ab'), ae = aggField(m.stats, 'ae'), pb = aggField(m.stats, 'pb'), pe = aggField(m.stats, 'pe'), sb = aggField(m.stats, 'sb'), arm = aggField(m.stats, 'arm_b'), armE = aggField(m.stats, 'arm_e');
-                ctx.font = '700 13px Arial'; ctx.fillStyle = '#cbd5e1'; ctx.fillText(`Ataque ${pct(ab, ab + ae)}%  ·  Aces ${sb}  ·  Recep+ ${pct(pb, pb + pe)}%  ·  Armados ${pct(arm, arm + armE)}%`, padX, headH - 8);
-                let y = headH + 20; const colX = [padX, padX + 45, padX + 295, padX + 435, padX + 575, padX + 715, padX + 850, padX + 960];
-                ctx.fillStyle = '#1b2733'; ctx.fillRect(padX - 8, y - 22, W - 2 * (padX - 8), 30); ctx.fillStyle = '#7dd3fc'; ctx.font = '700 12px Arial';
-                ['#', 'Jugador', 'Saque ✓/✗', 'Ataque ✓/✗', 'Recep ✓/✗', 'Armado ✓/✗', 'Def ✓/✗', 'Efic.'].forEach((c, i) => ctx.fillText(c, colX[i], y)); y += 22;
-                players.forEach((p, idx) => { const s = m.stats[p.id]; if (idx % 2 === 0) { ctx.fillStyle = '#121c25'; ctx.fillRect(padX - 8, y - 22, W - 2 * (padX - 8), rowH); } ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(colX[0] + 5, y - 5, 5, 0, 7); ctx.fill(); ctx.fillStyle = '#e6edf3'; ctx.font = '700 13px Arial'; ctx.fillText('#' + p.number, colX[0] + 14, y); ctx.font = '500 13px Arial'; ctx.fillText(p.name, colX[1], y); ctx.fillStyle = '#9fb3c8'; ctx.fillText(`${s.sb}/${s.se}`, colX[2], y); const isSA = p.position === 'Armador' || p.position === 'Líbero'; ctx.fillText(isSA ? '—' : `${s.ab}/${s.ae}`, colX[3], y); ctx.fillText(`${s.pb}/${s.pe}`, colX[4], y); ctx.fillText((s.arm_b || 0) + (s.arm_e || 0) > 0 ? `${s.arm_b}/${s.arm_e}` : '—', colX[5], y); ctx.fillText(p.position === 'Líbero' && (s.def_b || 0) + (s.def_e || 0) > 0 ? `${s.def_b}/${s.def_e}` : '—', colX[6], y); const eff = isSA ? pct(s.arm_b || 0, (s.arm_b || 0) + (s.arm_e || 0)) : pct(s.ab, s.ab + s.ae); ctx.fillStyle = eff >= 50 ? '#10b981' : eff >= 30 ? '#f59e0b' : '#ef4444'; ctx.font = '700 13px Arial'; ctx.fillText(eff + '%', colX[7], y); y += rowH; });
-                cv.toBlob(b => downloadBlob(b, `stats_${(m.opponent || 'rival')}_${m.date}.png`));
+                ctx.fillStyle = '#0e171f'; ctx.fillRect(0,0,W,H); ctx.fillStyle = '#e8794b'; ctx.fillRect(0,0,W,8);
+                ctx.fillStyle = '#e6edf3'; ctx.font = '800 26px Arial';
+                ctx.fillText((state.teamName||'Equipo') + '  vs  ' + (m.opponent||'Rival'), padX, 46);
+                ctx.font = '500 13px Arial'; ctx.fillStyle = '#9fb3c8';
+                let su=0,stc=0; m.sets.forEach(s => s.us>s.them?su++:stc++);
+                ctx.fillText(`${m.date}   ·   Sets ${su}-${stc}   ` + m.sets.map((s,i) => `S${i+1} ${s.us}-${s.them}`).join('  '), padX, 68);
+                // Resumen equipo
+                const sumParts = ['saque','ataque','recepcion','bloqueo'].map(fk => {
+                    const f=FUND[fk], pos=aggField(m.stats,f.pos), neu=aggField(m.stats,f.neu), neg=aggField(m.stats,f.neg);
+                    return `${f.label}: Efic ${eficacia(pos,neu,neg)}% / Efn ${eficiencia(pos,neu,neg)>=0?'+':''}${eficiencia(pos,neu,neg)}%`;
+                });
+                ctx.font = '700 12px Arial'; ctx.fillStyle = '#cbd5e1'; ctx.fillText(sumParts.join('   ·   '), padX, headH-8);
+                // Cabecera tabla
+                let y = headH+20;
+                const colW = (W-padX*2-180)/COLS.length;
+                const colX = [padX, padX+55, ...COLS.map((_,i) => padX+180+i*colW), W-58];
+                ctx.fillStyle = '#1b2733'; ctx.fillRect(padX-6, y-22, W-2*(padX-6), 30);
+                ctx.fillStyle = '#7dd3fc'; ctx.font = '700 11px Arial';
+                ['#','Jugador',...COLS.map(k => FUND[k].label),'Efic.'].forEach((c,i) => ctx.fillText(c, colX[i], y)); y+=22;
+                // Filas
+                players.forEach((p,idx) => {
+                    const s = migrateStats(m.stats[p.id]||blankStat());
+                    if (idx%2===0) { ctx.fillStyle='#121c25'; ctx.fillRect(padX-6,y-22,W-2*(padX-6),rowH); }
+                    ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(colX[0]+5,y-6,5,0,7); ctx.fill();
+                    ctx.fillStyle='#e6edf3'; ctx.font='700 12px Arial'; ctx.fillText('#'+p.number, colX[0]+14, y);
+                    ctx.font='500 12px Arial'; ctx.fillText(p.name, colX[1], y);
+                    ctx.fillStyle='#9fb3c8';
+                    COLS.forEach((fk,ci) => {
+                        const f=FUND[fk], pos=s[f.pos]||0, neu=s[f.neu]||0, neg=s[f.neg]||0, tot=pos+neu+neg;
+                        if (tot===0) { ctx.fillText('—', colX[2+ci], y); return; }
+                        const efic=eficacia(pos,neu,neg);
+                        ctx.fillText(`${pos}/${neu}/${neg}`, colX[2+ci], y-6);
+                        ctx.font='500 10px Arial'; ctx.fillStyle=eficaciaColor(efic);
+                        ctx.fillText(`Efic ${efic}%`, colX[2+ci], y+8);
+                        ctx.font='500 12px Arial'; ctx.fillStyle='#9fb3c8';
+                    });
+                    const defs=getStatDefs(p), {efic:ge}=globalEficPlayer(s,defs);
+                    ctx.fillStyle=eficaciaColor(ge); ctx.font='700 13px Arial';
+                    ctx.fillText(ge+'%', colX[colX.length-1], y);
+                    y+=rowH;
+                });
+                cv.toBlob(b => downloadBlob(b, `stats_${(m.opponent||'rival')}_${m.date}.png`));
             }
 
             /* ============================================================ HISTORIAL */
@@ -2236,8 +2495,59 @@
                 wrap.querySelectorAll('[data-delh]').forEach(b => b.onclick = () => showConfirm('¿Borrar este partido?', () => { state.history = state.history.filter(x => x.id !== b.dataset.delh); save(); renderHistorial(); }));
                 renderAccumulated();
             }
-            function openMatch(id) { const m = state.history.find(x => x.id === id); if (!m) return; const box = $('histDetail'); const players = Object.keys(m.stats).map(getPlayer).filter(Boolean).sort((a, b) => (a.number || 0) - (b.number || 0)); const rows = players.map(p => { const s = m.stats[p.id], isSA = p.position === 'Armador' || p.position === 'Líbero'; return `<tr><td><span class="dot" style="background:${p.color}"></span>#${p.number} ${escapeHtml(p.name)}</td><td>${s.sb}/${s.se}</td><td>${isSA ? '—' : `${s.ab}/${s.ae}`}</td><td>${s.pb}/${s.pe}</td><td>${(s.arm_b || 0) > 0 ? `${s.arm_b}/${s.arm_e}` : '—'}</td><td>${pct(isSA ? s.arm_b || 0 : s.ab, (isSA ? (s.arm_b || 0) + (s.arm_e || 0) : s.ab + s.ae))}%</td></tr>`; }).join(''); box.innerHTML = `<h3>${escapeHtml(m.opponent || 'Rival')} · ${m.date}</h3><table class="stat-table"><thead><tr><th>Jugador</th><th>Saque ✓/✗</th><th>Ataque ✓/✗</th><th>Recep ✓/✗</th><th>Armado ✓/✗</th><th>Efic.</th></tr></thead><tbody>${rows}</tbody></table>`; box.style.display = 'block'; box.scrollIntoView({ behavior: 'smooth' }); }
-            function renderAccumulated() { const box = $('accumBody'), totals = {}; const matches = state.history.concat(state.currentMatch ? [state.currentMatch] : []); matches.forEach(m => Object.keys(m.stats).forEach(id => { if (!totals[id]) totals[id] = blankStat(); ALL_KEYS.forEach(k => totals[id][k] = (totals[id][k] || 0) + (m.stats[id][k] || 0)); })); const ids = Object.keys(totals).filter(id => getPlayer(id)); if (!ids.length) { box.innerHTML = '<p class="empty">Sin datos todavía.</p>'; return; } const rows = ids.map(getPlayer).filter(Boolean).sort((a, b) => (a.number || 0) - (b.number || 0)).map(p => { const s = totals[p.id], isSA = p.position === 'Armador' || p.position === 'Líbero'; return `<tr><td><span class="dot" style="background:${p.color}"></span>#${p.number} ${escapeHtml(p.name)}</td><td>${s.sb}/${s.se}</td><td>${isSA ? '—' : `${s.ab}/${s.ae}`}</td><td>${s.pb}/${s.pe}</td><td>${(s.arm_b || 0) > 0 ? `${s.arm_b}/${s.arm_e}` : '—'}</td><td>${pct(isSA ? s.arm_b || 0 : s.ab, (isSA ? (s.arm_b || 0) + (s.arm_e || 0) : s.ab + s.ae))}%</td></tr>`; }).join(''); box.innerHTML = `<table class="stat-table"><thead><tr><th>Jugador</th><th>Saque ✓/✗</th><th>Ataque ✓/✗</th><th>Recep ✓/✗</th><th>Armado ✓/✗</th><th>Efic.</th></tr></thead><tbody>${rows}</tbody></table>`; }
+            function openMatch(id) {
+                const m = state.history.find(x => x.id === id); if (!m) return;
+                const box = $('histDetail');
+                const players = Object.keys(m.stats).map(getPlayer).filter(Boolean).sort((a,b) => (a.number||0)-(b.number||0));
+                const COLS = ['saque','ataque','recepcion','armado','bloqueo','defensa'];
+                const hdrs = COLS.map(k => `<th>${FUND[k].label}</th>`).join('');
+                const rows = players.map(p => {
+                    const s = migrateStats(m.stats[p.id]);
+                    const defs = getStatDefs(p);
+                    const { efic: ge } = globalEficPlayer(s, defs);
+                    const cells = COLS.map(fk => {
+                        const f=FUND[fk], pos=s[f.pos]||0, neu=s[f.neu]||0, neg=s[f.neg]||0, tot=pos+neu+neg;
+                        if (tot===0) return `<td style="color:var(--muted)">—</td>`;
+                        const efic=eficacia(pos,neu,neg), efn=eficiencia(pos,neu,neg);
+                        const efnSign=efn>=0?'+':'';
+                        return `<td>${pos}/<span style="color:var(--warn)">${neu}</span>/<span style="color:var(--bad)">${neg}</span><br><small style="color:${eficaciaColor(efic)}">${efic}% / <span style="color:${eficienciaColor(efn)}">${efnSign}${efn}%</span></small></td>`;
+                    }).join('');
+                    return `<tr><td><span class="dot" style="background:${p.color}"></span>#${p.number} ${escapeHtml(p.name)}</td>${cells}<td style="color:${eficaciaColor(ge)};font-weight:700">${ge}%</td></tr>`;
+                }).join('');
+                box.innerHTML = `<h3>${escapeHtml(m.opponent||'Rival')} · ${m.date}</h3>
+                <p style="font-size:12px;color:var(--muted);margin:4px 0 10px">Pos / Neu / Neg · Eficacia% / Eficiencia%</p>
+                <div style="overflow-x:auto"><table class="stat-table"><thead><tr><th>Jugador</th>${hdrs}<th>Efic. Gral.</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+                box.style.display = 'block'; box.scrollIntoView({behavior:'smooth'});
+            }
+
+            function renderAccumulated() {
+                const box = $('accumBody'), totals = {};
+                const matches = state.history.concat(state.currentMatch ? [state.currentMatch] : []);
+                matches.forEach(m => Object.keys(m.stats).forEach(id => {
+                    if (!totals[id]) totals[id] = blankStat();
+                    const s = migrateStats(m.stats[id]);
+                    ALL_KEYS.forEach(k => totals[id][k] = (totals[id][k]||0) + (s[k]||0));
+                }));
+                const ids = Object.keys(totals).filter(id => getPlayer(id));
+                if (!ids.length) { box.innerHTML = '<p class="empty">Sin datos todavía.</p>'; return; }
+                const COLS = ['saque','ataque','recepcion','armado','bloqueo','defensa'];
+                const hdrs = COLS.map(k => `<th>${FUND[k].label}</th>`).join('');
+                const rows = ids.map(getPlayer).filter(Boolean).sort((a,b) => (a.number||0)-(b.number||0)).map(p => {
+                    const t = totals[p.id];
+                    const defs = getStatDefs(p);
+                    const { efic: ge } = globalEficPlayer(t, defs);
+                    const cells = COLS.map(fk => {
+                        const f=FUND[fk], pos=t[f.pos]||0, neu=t[f.neu]||0, neg=t[f.neg]||0, tot=pos+neu+neg;
+                        if (tot===0) return `<td style="color:var(--muted)">—</td>`;
+                        const efic=eficacia(pos,neu,neg), efn=eficiencia(pos,neu,neg);
+                        const efnSign=efn>=0?'+':'';
+                        return `<td>${pos}/<span style="color:var(--warn)">${neu}</span>/<span style="color:var(--bad)">${neg}</span><br><small style="color:${eficaciaColor(efic)}">${efic}% / <span style="color:${eficienciaColor(efn)}">${efnSign}${efn}%</span></small></td>`;
+                    }).join('');
+                    return `<tr><td><span class="dot" style="background:${p.color}"></span>#${p.number} ${escapeHtml(p.name)}</td>${cells}<td style="color:${eficaciaColor(ge)};font-weight:700">${ge}%</td></tr>`;
+                }).join('');
+                box.innerHTML = `<p style="font-size:12px;color:var(--muted);margin:0 0 8px">Pos / Neu / Neg · Eficacia% / Eficiencia%</p>
+                <div style="overflow-x:auto"><table class="stat-table"><thead><tr><th>Jugador</th>${hdrs}<th>Efic. Gral.</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+            }
 
             /* ============================================================ IMPORT / EXPORT */
             function exportPlanilla() {
